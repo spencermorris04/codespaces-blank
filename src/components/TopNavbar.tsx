@@ -7,9 +7,10 @@ import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
+function classNames(...classes: Array<string | false | undefined | null>): string {
+  return classes.filter(Boolean).join(' ');
 }
+
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',

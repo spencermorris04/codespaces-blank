@@ -135,7 +135,11 @@ export default async function HomePage() {
               <span className={`text-xl font-bold mr-4 ${index < 3 ? 'text-green-500' : 'text-gray-500'} ${index > 5 ? 'text-red-500' : 'text-gray-500'}`}>{index + 1}</span>
               
               {/* Avatar - replace 'avatarUrl' with your actual image path */}
-              <img src={entry.avatarUrl || '/default-avatar.png'} alt={entry.name} className="w-10 h-10 rounded-full mr-3"/>
+              <img src={
+                entry.avatarUrl || '/default-avatar.png'} 
+                alt={entry.name || 'User_Error'}
+                className="w-10 h-10 rounded-full mr-3"
+              />
               
               {/* Name */}
               <span className="flex-1 font-semibold">{entry.name}</span>
@@ -154,7 +158,7 @@ export default async function HomePage() {
         <ul role="list" className="space-y-4">
           {recentProjects.map((project) => (
             <li key={project.id}>
-              <div className="bg-white p-4 rounded-lg shadow">
+              <div className="bg-white p-4 rounded-lg shadow outline outline-3">
                 <h3 className="font-semibold">{project.title}</h3>
                 <p className="text-sm text-gray-500">{project.description}</p>
               </div>
