@@ -6,6 +6,12 @@ import { styled, alpha } from '@mui/material/styles';
 import { Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import Modal from '@mui/material/Modal';
+import Box from '@mui/material/Box';
+import UploadComponent from './UploadButton';
+import TextField from '@mui/material/TextField';
+import React from 'react';
+
 
 function classNames(...classes: Array<string | false | undefined | null>): string {
   return classes.filter(Boolean).join(' ');
@@ -56,6 +62,23 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const TopNavbar = () => {
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  // Modal style
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 400,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+  };
+
   return (
     <AppBar position="static">
       <Toolbar className="bg-neo-red text-black">
@@ -163,10 +186,51 @@ const TopNavbar = () => {
         </IconButton>
         </div>
         <div className="bg-white px-2 rounded-md outline outline-3">
-        <Button color="inherit" href="/SongEngine">
-          Upload
-        </Button>
+        <Button color="inherit" onClick={handleOpen}>
+        Upload
+      </Button>
         </div>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="upload-modal-title"
+          aria-describedby="upload-modal-description"
+        >
+          <Box sx={style}>
+            <Typography id="upload-modal-title" variant="h6" component="h2">
+              Upload Song
+            </Typography>
+            <UploadComponent />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Song Title"
+              variant="outlined"
+              // Add state handling as needed
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Instruments Used"
+              variant="outlined"
+              // Add state handling as needed
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Genre"
+              variant="outlined"
+              // Add state handling as needed
+            />
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Your Contribution"
+              variant="outlined"
+              // Add state handling as needed
+            />
+          </Box>
+        </Modal>
       </Toolbar>
     </AppBar>
   );
