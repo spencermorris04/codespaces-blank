@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import UploadComponent from './UploadButton';
 import TextField from '@mui/material/TextField';
 import React from 'react';
+import UploadModalComponent from './UploadModal'
 
 
 function classNames(...classes: Array<string | false | undefined | null>): string {
@@ -190,47 +191,8 @@ const TopNavbar = () => {
         Upload
       </Button>
         </div>
-        <Modal
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="upload-modal-title"
-          aria-describedby="upload-modal-description"
-        >
-          <Box sx={style}>
-            <Typography id="upload-modal-title" variant="h6" component="h2">
-              Upload Song
-            </Typography>
-            <UploadComponent />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Song Title"
-              variant="outlined"
-              // Add state handling as needed
-            />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Instruments Used"
-              variant="outlined"
-              // Add state handling as needed
-            />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Genre"
-              variant="outlined"
-              // Add state handling as needed
-            />
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Your Contribution"
-              variant="outlined"
-              // Add state handling as needed
-            />
-          </Box>
-        </Modal>
+
+      {open && <UploadModalComponent />}
       </Toolbar>
     </AppBar>
   );

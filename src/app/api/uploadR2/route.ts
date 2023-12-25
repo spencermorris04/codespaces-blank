@@ -11,11 +11,11 @@ const s3Client = new S3Client({
 });
 
 export async function POST(request: Request) {
-  const { fileName, fileType } = await request.json();
+  const { fileName, fileType, fileUUID } = await request.json(); // Add fileUUID here
 
   const command = new PutObjectCommand({
     Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
-    Key: fileName,
+    Key: fileUUID, // Use fileUUID as the key
     ContentType: fileType,
   });
 

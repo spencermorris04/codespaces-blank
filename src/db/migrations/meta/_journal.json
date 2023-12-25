@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1703441526221,
+      "tag": "0000_many_imperial_guard",
+      "breakpoints": true
+    }
+  ]
+}
