@@ -5,17 +5,14 @@ export async function POST(request: Request) {
   try {
     const formData = await request.json();
 
-    // Ensure multi-select fields are arrays and handle them appropriately
-    const instruments = Array.isArray(formData.instruments) ? formData.instruments.join(', ') : '';
-    const genres = Array.isArray(formData.genre) ? formData.genre.join(', ') : '';
-    const contributions = Array.isArray(formData.contribution) ? formData.contribution.join(', ') : '';
-
+    // Directly use the form data as is (assuming it's already processed in the form)
     await db.insert(songs).values({
       r2Id: formData.r2Id,
+      songTitle: formData.songTitle,
       uploaderUserId: formData.uploaderUserId,
-      genre: genres,
-      instruments: instruments,
-      contribution: contributions,
+      genre: formData.genre, // Assuming formData.genre is already a string
+      instruments: formData.instruments, // Assuming formData.instruments is already a string
+      contribution: formData.contribution, // Assuming formData.contribution is already a string
       description: formData.description,
       lyrics: formData.lyrics
     });
@@ -26,3 +23,4 @@ export async function POST(request: Request) {
     return new Response(JSON.stringify({ error: "Error submitting song" }), { status: 500 });
   }
 }
+
