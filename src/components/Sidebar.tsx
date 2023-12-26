@@ -14,7 +14,6 @@ import {
 } from '@mui/icons-material';
 import { UserButton, useUser } from "@clerk/nextjs";
 
-
 const ACTIVE_ROUTE = "flex items-center gap-3 py-2 px-4 mb-3 text-white bg-black rounded-md";
 const INACTIVE_ROUTE = "flex items-center gap-3 py-2 px-4 mb-3 text-black outline outline-3 bg-white hover:text-white hover:bg-black rounded-md";
 
@@ -52,9 +51,10 @@ export default function Sidebar() {
       <div className="flex flex-col items-center mb-6">
         <Image
           src='/musephoria_logo_rounded.png'
-          alt={'Musephoria'}
+          alt='Musephoria'
           width={120}
           height={120}
+          priority // Use priority prop for above-the-fold images
         />
       </div>
 
@@ -68,12 +68,11 @@ export default function Sidebar() {
         <SidebarLink href="/Settings" Icon={SettingsOutlined} text="Settings" active={pathname === "/Settings"} />
       </ul>
 
-      <AuthButton  />
+      <AuthButton />
 
       <div className="flex self-center py-2">
         {user.fullName}
       </div>
-
     </div>
   );
 }
