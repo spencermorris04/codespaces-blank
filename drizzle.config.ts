@@ -1,11 +1,14 @@
 import type { Config } from "drizzle-kit";
-import "dotenv/config";
+import dotenv from "dotenv";
+
+// Load environment variables from .env.local
+dotenv.config({ path: '.env.local' });
 
 export default {
   schema: "./src/db/schema.ts",
   dbCredentials: {
-    uri: 'mysql://92p572p3fc5vkcj3t56v:pscale_pw_OuT7uXUr1NpD1cjAh7vIvT2wfPmfB6EmzaKQn8vvbkg@aws.connect.psdb.cloud/musephoria-db?ssl={"rejectUnauthorized":true}',
-    database: "musephoria-db",
+    uri: process.env.DATABASE_URL as string, // Ensure that DATABASE_URL is defined in .env.local
+    database: "musephoria-db", // You can also make this an environment variable if needed
   },
   driver: "mysql2",
 } satisfies Config;

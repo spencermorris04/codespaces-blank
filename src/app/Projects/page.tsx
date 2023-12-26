@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import MusicPlayer from '../../components/MusicPlayer';
 import SongCard from '../../components/SongCard';
-import ExpandMoreOutlinedIcon from '@mui/icons-material/ExpandMoreOutlined';
+import UploadSongToQueue from '../../components/UploadSongToQueue';
 
 // Define your Song interface (as before)
 interface Song {
@@ -137,25 +137,32 @@ const ProjectsPage = () => {
           <>
             <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
             <div className="flex-grow overflow-y-auto">
-              <div className="mb-4 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Genre:</strong> {selectedSong.genre}
               </div>
-              <div className="mb-4 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Instruments:</strong> {selectedSong.instruments}
               </div>
-              <div className="mb-4 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Contribution:</strong> {selectedSong.contribution}
               </div>
-              <div className="mb-4 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Description:</strong>
-                <p className="mt-2 bg-white px-4 py-2 rounded-lg text-black">{selectedSong.description}</p>
+                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black">{selectedSong.description}</p>
               </div>
-              <div className="mb-4 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Lyrics:</strong>
-                <p className="mt-2 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap">{selectedSong.lyrics}</p>
+                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap">{selectedSong.lyrics}</p>
               </div>
             </div>
+            <div className="self-center flex">
             <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
+            </div>
+
+            {/* Add UploadSongToQueue button */}
+            <div className="mt-6 self-center">
+              <UploadSongToQueue song={selectedSong} />
+            </div>
           </>
         ) : (
           <div className="text-center">Select a song to view details</div>

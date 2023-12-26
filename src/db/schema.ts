@@ -51,12 +51,15 @@ export const points = mysqlTable("points", {
 // New Queue table
 export const queue = mysqlTable('queue', {
   id: serial("id").primaryKey(),
-  songId: int("song_id"), // Reference to Songs table
-  uploaderUserId: varchar('uploaderUserId', { length: 255 }), // User who uploaded the song
-  genre: varchar('genre', { length: 255 }), // Genre of the song
-  proficiencyLevel: varchar('proficiencyLevel', { length: 255 }), // Proficiency level
-  timestamp: timestamp('timestamp'), // When the song was added to the queue
-  reviewed: int('reviewed') // Flag to indicate if reviewed
+  songTitle: text('songTitle'),
+  r2Id: varchar('r2Id', { length: 255 }),
+  uploaderUserId: varchar('uploaderUserId', { length: 255 }), 
+  genre: varchar('genre', { length: 255 }),
+  instruments: varchar('instruments', { length: 255 }),
+  contribution: varchar('contribution', { length: 255 }),
+  description: text('description'),
+  lyrics: text('lyrics'),
+  timestamp: timestamp('timestamp', { mode: 'date' }) // Set mode to 'date'
 });
 
 // Corrected default export
