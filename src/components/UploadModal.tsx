@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useAuth } from "@clerk/nextjs";
 import Modal from '@mui/material/Modal';
 import { v4 as uuidv4 } from 'uuid';
-import UploadFormComponent from './UploadForm'; // Import FormUploadComponent
+import UploadFormComponent from './UploadForm'; // Import UploadFormComponent
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import CloseIcon from '@mui/icons-material/Close';
 
 const UploadModalComponent = () => {
   const [fileUUID, setFileUUID] = useState<string>('');
-  const { userId, getToken } = useAuth(); // Retrieve userId here
+  const [open, setOpen] = useState<boolean>(true);
+  const { userId, getToken } = useAuth();
+
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
       if (!file) {
-        alert('Please select a file to upload.');
+        toast.error('Please select a file to upload.');
         return;
       }
 
       const token = await getToken();
-      const generatedFileUUID = uuidv4(); // Generate UUID for the file
-      setFileUUID(generatedFileUUID); // Update the state with the new UUID
+      const generatedFileUUID = uuidv4();
+      setFileUUID(generatedFileUUID);
 
       try {
         const response = await fetch(`/api/uploadR2`, {
@@ -37,46 +45,49 @@ const UploadModalComponent = () => {
         }
 
         const { url } = data;
-
-        // Uploading the file to Cloudflare R2 using the pre-signed URL
         const uploadResponse = await fetch(url, {
           method: 'PUT',
-          body: file, // Removed 'Authorization' header
+          body: file,
         });
 
         if (uploadResponse.ok) {
-          alert('File uploaded successfully!');
+          toast.success('File uploaded successfully!');
         } else {
-          alert('Upload failed.');
+          toast.error('Upload failed.');
         }
       } catch (error) {
         console.error('Error during file upload:', error);
-        alert('Error uploading file.');
+        toast.error('Error uploading file.');
       }
     }
   };
 
   return (
-    <Modal open={true} onClose={() => {}}>
-      <div className="modal-content" style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: '33%',
-        backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '10px',
-        boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <input type="file" accept=".mp3, .wav" onChange={handleFileUpload} />
-        {fileUUID && userId && <UploadFormComponent fileUUID={fileUUID} userId={userId} />} {/* Conditional rendering */}
-      </div>
-    </Modal>
+    <>
+      <Modal open={open} onClose={handleClose}>
+        <div className="modal-content bg-neo-light-pink outline outline-4" style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '33%',
+          padding: '20px',
+          borderRadius: '10px',
+          boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <button onClick={handleClose} className="self-end">
+            <CloseIcon />
+          </button>
+          <input type="file" accept=".mp3, .wav" onChange={handleFileUpload} />
+          {fileUUID && userId && <UploadFormComponent fileUUID={fileUUID} userId={userId} onClose={handleClose} />} 
+        </div>
+      </Modal>
+      <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover />
+    </>
   );
 };
 

@@ -10,9 +10,13 @@ import {
 // UserDetails table
 export const userDetails = mysqlTable('user_details', {
   id: serial("id").primaryKey(),
-  name: varchar('name', { length: 255 }),
-  email: varchar('email', { length: 255 }),
-  bio: text('bio')
+  userId: varchar('userId', { length: 255 }).notNull(),
+  username: varchar('username', { length: 255 }),
+  bio: text('bio'),
+  proficiencyLevel: varchar('proficiencyLevel', { length: 255 }), // Store as varchar
+  instruments: text('instruments'),
+  favoriteBands: text('favoriteBands'),
+  favoriteGenres: text('favoriteGenres')
 });
 
 // Updated Songs table

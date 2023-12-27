@@ -9,6 +9,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        flash: {
+          '0%, 100%': { backgroundColor: 'white' },
+          '50%': { backgroundColor: 'rgba(229, 231, 235, var(--tw-bg-opacity))' }, // light grey color
+        },
+      },
+      animation: {
+        'flash': 'flash 1s ease-in-out infinite',
+      },
       outlineWidth: {
         1: '1px',
         2: '2px',

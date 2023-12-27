@@ -111,7 +111,27 @@ const ProjectsPage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-[90vh] mx-4">
+        {/* Left Pane - Dummy Song Cards */}
+        <div className="relative flex-1 w-3/5">
+          <div className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
+            <div className="grid grid-cols-2 gap-y-5 gap-x-5 items-stretch">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className="flex flex-col h-48 bg-gray-200 rounded-lg p-4 animate-flash">
+                  {/* Dummy content with size similar to actual song cards */}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Right Pane - Placeholder */}
+        <div className="flex-2 w-2/5 ml-2 my-4 py-4 px-8 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg flex flex-col">
+          <div className="text-center">Select a song to view details</div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -119,7 +139,7 @@ const ProjectsPage = () => {
       {/* Left Pane - List of Song Cards */}
       <div className="relative flex-1 w-3/5">
         <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
-          <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch">
+          <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
             {songs.map((song) => (
               <div key={song.id} className="flex flex-col h-full">
                 <SongCard song={song} onClick={() => handleCardClick(song)} />
@@ -127,7 +147,7 @@ const ProjectsPage = () => {
             ))}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-30 pointer-events-none bg-gradient-to-t from-neo-light-cream to-transparent"></div> {/* Fade effect */}
+        <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-gradient-to-t from-neo-light-cream to-transparent"></div> {/* Fade effect */}
         <div className="absolute top-0 left-0 right-0 h-4 pointer-events-none bg-gradient-to-t from-transparent to-neo-light-cream"></div> {/* Fade effect */}
       </div>
 
