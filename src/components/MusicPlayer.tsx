@@ -1,26 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 
 interface MusicPlayerProps {
   songUrl: string;
+  onEnded?: () => void; // Optional callback when the song ends
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl }) => {
-  const [currentUrl, setCurrentUrl] = useState(songUrl);
+const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Update the current URL when the songUrl prop changes
-    setCurrentUrl(songUrl);
-  }, [songUrl]);
+    if (audioRef.current) {
+      // Set the song source
+      audioRef.current.src = songUrl;
 
-  if (!currentUrl) {
-    return <div>Unable to load song.</div>;
-  }
+      // Autoplay the audio
+      audioRef.current.autoplay = true;
+
+      // Add an event listener for when the song ends
+      audioRef.current.addEventListener('ended', () => {
+        if (onEnded) {
+          onEnded();
+        }
+      });
+    }
+  }, [songUrl, onEnded]);
 
   return (
-    <audio controls src={currentUrl} className="">
-      <source src={currentUrl} type="audio/mpeg" />
-      Your browser does not support the audio element.
-    </audio>
+    <audio ref={audioRef} controls />
   );
 };
 

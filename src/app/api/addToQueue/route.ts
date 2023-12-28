@@ -10,9 +10,6 @@ export async function POST(request: Request) {
             songData.timestamp = new Date(songData.timestamp);
         }
 
-        // Log for debugging
-        console.log('Processed songData:', songData);
-
         await db.insert(queue).values(songData);
 
         return new Response(JSON.stringify({ message: "Song added to queue successfully" }), { status: 200 });

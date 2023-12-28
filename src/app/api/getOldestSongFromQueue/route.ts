@@ -6,11 +6,21 @@ export async function POST(request: Request) {
   try {
     const { userId } = await request.json();
 
+    // Selecting all the fields from the queue table based on your schema
     const songRecord = await db.select({
-      r2Id: queue.r2Id
+      id: queue.id,
+      songTitle: queue.songTitle,
+      r2Id: queue.r2Id,
+      uploaderUserId: queue.uploaderUserId,
+      genre: queue.genre,
+      instruments: queue.instruments,
+      contribution: queue.contribution,
+      description: queue.description,
+      lyrics: queue.lyrics,
+      timestamp: queue.timestamp
     }).from(queue)
       .where(ne(sql`${queue.uploaderUserId}`, sql`${userId}`))
-      .orderBy(asc(queue.timestamp)) // Using asc() for ascending order
+      .orderBy(asc(queue.timestamp))
       .limit(1)
       .execute();
 

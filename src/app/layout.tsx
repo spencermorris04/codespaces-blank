@@ -23,7 +23,7 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${publicsans.className} flex relative h-screen`}>
           {/* Sidebar */}
-          <div className="flex-none border-r-4 border-black w-60z"> {/* Adjust width as needed */}
+          <div className="flex-none border-r-4 border-black"> {/* Adjust width as needed */}
             <Sidebar />
           </div>
           

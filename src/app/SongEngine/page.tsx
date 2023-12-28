@@ -1,71 +1,251 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import MusicPlayer from '../../components/MusicPlayer';
+import classNames from 'classnames';
+
+// Define your Song interface
+interface Song {
+  id: number;
+  songTitle: string;
+  r2Id: string;
+  presignedUrl?: string;
+  uploaderUserId: string;
+  genre: string;
+  instruments: string;
+  contribution: string;
+  description: string;
+  lyrics: string;
+  timestamp: string;
+}
+
+interface UrlData {
+  objectKey: string;
+  url: string;
+}
 
 const SongEngine = () => {
-  const [songUrl, setSongUrl] = useState(null);
+  const [feedback, setFeedback] = useState({
+    productionFeedback: '',
+    instrumentationFeedback: '',
+    songwritingFeedback: '',
+    vocalsFeedback: '',
+    otherFeedback: ''
+  });
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSongPlaying, setIsSongPlaying] = useState(false); // Track if the song is playing
   const { userId, getToken } = useAuth();
 
-  useEffect(() => {
-    const fetchOldestSong = async () => {
-      try {
-        const token = await getToken();
-        const response = await fetch('/api/getOldestSongFromQueue', {
+  const fetchSongDetails = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = await getToken();
+      const response = await fetch('/api/getOldestSongFromQueue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch the oldest song from queue: ${response.statusText}`);
+      }
+
+      const [songData] = await response.json();
+      if (songData) {
+        const urlResponse = await fetch('/api/getR2SongUrls', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({ userId }),
+          body: JSON.stringify({ objectKeys: [songData.r2Id] }),
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch the oldest song from queue');
+        if (urlResponse.ok) {
+          const urlData: UrlData[] = await urlResponse.json(); // Assuming the response is an array of UrlData objects
+          songData.presignedUrl = urlData.find((url: UrlData) => url.objectKey === songData.r2Id)?.url;
+          setSelectedSong(songData);
+          setIsSongPlaying(true); // Start playing the song
         }
-
-        const songData = await response.json();
-        if (songData && songData.length > 0 && songData[0].r2Id) {
-          const urlResponse = await fetch('/api/getR2SongUrls', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ objectKeys: [songData[0].r2Id] }),
-          });
-
-          const urlData = await urlResponse.json();
-          if (urlData && urlData.length > 0) {
-            setSongUrl(urlData[0].url);
-          }
-        } else {
-          console.error('No song found in queue');
-        }
-      } catch (error) {
-        console.error('Error:', error);
+      } else {
+        // If no song is returned, set selectedSong to null to unload the right pane
+        setSelectedSong(null);
+        setIsSongPlaying(false); // Stop playing the song
       }
-    };
-
-    fetchOldestSong();
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
   }, [userId, getToken]);
 
-  return (
-    <div className="flex h-[90vh] mx-4">
-      {/* Left Pane - Form */}
-      <div className="flex-1 w-1/2 p-4">
-        {/* Add your form here */}
-        <h2>Feedback Form</h2>
-        {/* Form content */}
-      </div>
+  useEffect(() => {
+    fetchSongDetails();
+  }, [fetchSongDetails]);
 
-      {/* Right Pane - Similar to ProjectsPage */}
-      <div className="flex-2 w-1/2 ml-2 my-4 p-4 bg-white rounded-lg shadow-lg">
-        {songUrl ? (
-          <MusicPlayer songUrl={songUrl} />
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFeedback(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedSong) return;
+
+    const token = await getToken();
+    const submissionData = { ...feedback, r2Id: selectedSong.r2Id, reviewerUserId: userId, uploaderUserId: selectedSong.uploaderUserId };
+
+    try {
+      await fetch('/api/uploadFeedbackForm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(submissionData),
+      });
+
+      await fetch('/api/removeFromQueue', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ r2Id: selectedSong.r2Id, timestamp: selectedSong.timestamp }),
+      });
+
+      // Fetch the next song
+      await fetchSongDetails();
+
+      // Reset feedback form
+      setFeedback({
+        productionFeedback: '',
+        instrumentationFeedback: '',
+        songwritingFeedback: '',
+        vocalsFeedback: '',
+        otherFeedback: ''
+      });
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+    }
+  };
+
+  // Form input and label classes
+  const inputClass = classNames(
+    'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-4',
+    { 'animate-flash': loading }
+  );
+  const labelClass = 'block text-gray-700 text-sm font-bold mb-2';
+
+  return (
+    <div className="flex flex-row mx-4 h-[90vh] w-full">
+    {/* Left Pane - Feedback Form */}
+    <div className="flex-1 w-3/5 px-4 py-4 overflow-y-auto">
+        <form onSubmit={handleSubmit} className="bg-neo-light-pink shadow-md rounded-lg outline outline-4 px-8 pt-6 pb-8 mb-4">
+        {/* Production Feedback */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="productionFeedback">Production Feedback:</label>
+          <textarea
+            id="productionFeedback"
+            name="productionFeedback"
+            value={feedback.productionFeedback}
+            onChange={handleInputChange}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Instrumentation Feedback */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="instrumentationFeedback">Instrumentation Feedback:</label>
+          <textarea
+            id="instrumentationFeedback"
+            name="instrumentationFeedback"
+            value={feedback.instrumentationFeedback}
+            onChange={handleInputChange}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Songwriting Feedback */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="songwritingFeedback">Songwriting Feedback:</label>
+          <textarea
+            id="songwritingFeedback"
+            name="songwritingFeedback"
+            value={feedback.songwritingFeedback}
+            onChange={handleInputChange}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Vocals Feedback */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="vocalsFeedback">Vocals Feedback:</label>
+          <textarea
+            id="vocalsFeedback"
+            name="vocalsFeedback"
+            value={feedback.vocalsFeedback}
+            onChange={handleInputChange}
+            className={inputClass}
+          />
+        </div>
+
+        {/* Other Feedback */}
+        <div className="mb-4">
+          <label className={labelClass} htmlFor="otherFeedback">Other Feedback:</label>
+          <textarea
+            id="otherFeedback"
+            name="otherFeedback"
+            value={feedback.otherFeedback}
+            onChange={handleInputChange}
+            className={inputClass}
+          />
+        </div>
+
+        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4">
+          Submit Feedback
+        </button>
+      </form>
+    
+
+    {/* Right Pane - Song Details and Music Player */}
+    <div className="flex-2 w-2/5 px-4 py-4 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg overflow-y-auto">
+        {selectedSong ? (
+          <>
+            <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
+            <div className="overflow-y-auto">
+              {/* Display song details */}
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                <strong>Genre:</strong> {selectedSong.genre}
+              </div>
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                <strong>Instruments:</strong> {selectedSong.instruments}
+              </div>
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                <strong>Contribution:</strong> {selectedSong.contribution}
+              </div>
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                <strong>Description:</strong>
+                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black">{selectedSong.description}</p>
+              </div>
+              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                <strong>Lyrics:</strong>
+                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap">{selectedSong.lyrics}</p>
+              </div>
+            </div>
+            <div className="self-center flex">
+              {/* Music Player */}
+              <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
+            </div>
+          </>
         ) : (
-          <div>Loading song...</div>
+          <div className="text-center">Loading song details...</div>
         )}
+      </div>
       </div>
     </div>
   );

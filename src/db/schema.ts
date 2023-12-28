@@ -37,7 +37,7 @@ export const songFeedback = mysqlTable('songFeedback', {
   id: serial("id").primaryKey(),
   reviewerUserId: varchar('reviewerUserId', { length: 255 }), // No foreign key reference
   uploaderUserId: varchar('uploaderUserId', { length: 255 }), // No foreign key reference
-  songId: varchar('songId', { length: 255 }), // No foreign key reference
+  r2Id: varchar('r2Id', { length: 255 }), // No foreign key reference
   productionFeedback: text('productionFeedback'),
   instrumentationFeedback: text('instrumentationFeedback'),
   songwritingFeedback: text('songwritingFeedback'),
