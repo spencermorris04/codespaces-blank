@@ -3,7 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Public_Sans } from 'next/font/google'
 import './globals.css'
 import Sidebar from '~/components/Sidebar';
-import TopNavbar from '~/components/TopNavbar';
+import ClientSideLayout from './site/layout'; // Import the client-side layout
 import { neobrutalism } from "@clerk/themes";
 
 const publicsans = Public_Sans({ subsets: ['latin'] })
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider appearance={{ baseTheme: neobrutalism }}>
+<ClerkProvider appearance={{ baseTheme: neobrutalism }}>
       <html lang="en">
         <body className={`${publicsans.className} flex relative h-screen`}>
           {/* Sidebar */}
@@ -29,9 +29,6 @@ export default function RootLayout({
           
           {/* Main content area with Top Navbar */}
           <div className="flex-1 flex flex-col">
-            <div className="border-b-4 border-black">
-             <TopNavbar />
-            </div>
             <main className="flex-1 overflow-y-auto bg-neo-light-cream ">
               {children}
             </main>
@@ -48,5 +45,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }

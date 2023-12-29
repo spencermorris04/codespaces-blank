@@ -1,7 +1,11 @@
-import React from 'react';
+"use client";
+import React, { useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUserPoints, removePoints } from '../app/store/slices/pointsSlice';
+import { RootState, AppDispatch } from '../app/store/store';
 
 interface UploadSongToQueueProps {
   song: {
@@ -17,34 +21,51 @@ interface UploadSongToQueueProps {
 }
 
 const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song }) => {
-  const { getToken } = useAuth();
+  const { userId, getToken } = useAuth();
+  const dispatch = useDispatch<AppDispatch>(); // Use the AppDispatch type here
+  const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
+  const costOfAddingToQueue = 100;
+
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchUserPoints(userId));
+    }
+  }, [userId, dispatch]);
 
   const handleUploadToQueue = async () => {
-    try {
-      const token = await getToken();
-      const timestamp = new Date().toISOString(); // Generate timestamp
+    if (!userId) {
+      toast.error('User ID is not available.');
+      return;
+    }
 
-      const response = await fetch('/api/addToQueue', {
+    try {
+      if (totalPoints < costOfAddingToQueue) {
+        toast.error('You do not have enough points to add this song to the queue');
+        return;
+      }
+
+      const token = await getToken();
+      const timestamp = new Date().toISOString();
+      const addToQueueResponse = await fetch('/api/addToQueue', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ ...song, timestamp }), // Include the timestamp
+        body: JSON.stringify({ ...song, timestamp }),
       });
 
-      if (response.ok) {
+      if (addToQueueResponse.ok) {
+        dispatch(removePoints({ userId, points: costOfAddingToQueue }));
         toast.success('Song added to queue successfully');
       } else {
-        const errorText = await response.text();
+        const errorText = await addToQueueResponse.text();
         throw new Error(`Failed to add song to queue: ${errorText}`);
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error('Error:', error);
         toast.error(`Error adding song to queue: ${error.message}`);
       } else {
-        console.error('An unknown error occurred:', error);
         toast.error('An unknown error occurred while adding song to queue');
       }
     }
@@ -53,7 +74,7 @@ const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song }) => {
   return (
     <div>
       <button 
-        className="bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4 px-8"
+        className="bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4"
         onClick={handleUploadToQueue}
       >
         Add to Queue

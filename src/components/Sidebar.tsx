@@ -59,13 +59,13 @@ export default function Sidebar() {
       </div>
 
       <ul className="flex-grow space-y-2 text-white">
-        <SidebarLink href="/" Icon={HomeOutlined} text="Dashboard" active={pathname === "/Dashboard"} />
-        <SidebarLink href="/SongEngine" Icon={LibraryMusicOutlined} text="Song Engine" active={pathname === "/SongEngine"} />
-        <SidebarLink href="/Projects" Icon={BlurLinearOutlined} text="Projects" active={pathname === "/Projects"} />
-        <SidebarLink href="/Feedback" Icon={LyricsOutlined} text="Feedback" active={pathname === "/Feedback"} />
-        <SidebarLink href="/League" Icon={BarChartOutlined} text="League" active={pathname === "/League"} />
-        <SidebarLink href="/Messages" Icon={ForumOutlined} text="Messages" active={pathname === "/Messages"} />
-        <SidebarLink href="/Settings" Icon={SettingsOutlined} text="Settings" active={pathname === "/Settings"} />
+        <SidebarLink href="/site" Icon={HomeOutlined} text="Dashboard" active={pathname === "/Dashboard"} />
+        <SidebarLink href="/site/SongEngine" Icon={LibraryMusicOutlined} text="Song Engine" active={pathname === "/SongEngine"} />
+        <SidebarLink href="/site/Projects" Icon={BlurLinearOutlined} text="Projects" active={pathname === "/Projects"} />
+        <SidebarLink href="/site/Feedback" Icon={LyricsOutlined} text="Feedback" active={pathname === "/Feedback"} />
+        <SidebarLink href="/site/League" Icon={BarChartOutlined} text="League" active={pathname === "/League"} />
+        <SidebarLink href="/site/Messages" Icon={ForumOutlined} text="Messages" active={pathname === "/Messages"} />
+        <SidebarLink href="/site/Settings" Icon={SettingsOutlined} text="Settings" active={pathname === "/Settings"} />
       </ul>
 
       <AuthButton />

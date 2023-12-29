@@ -1,8 +1,12 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import MusicPlayer from '../../components/MusicPlayer';
+import MusicPlayer from '../../../components/MusicPlayer';
 import classNames from 'classnames';
+import { useDispatch } from 'react-redux';
+import { addPoints } from '../../store/slices/pointsSlice';
+import { AppDispatch } from '../../store/store';
+import { toast, ToastContainer } from 'react-toastify';
 
 // Define your Song interface
 interface Song {
@@ -34,8 +38,9 @@ const SongEngine = () => {
   });
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isSongPlaying, setIsSongPlaying] = useState(false); // Track if the song is playing
+  const [isSongPlaying, setIsSongPlaying] = useState(false);
   const { userId, getToken } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
 
   const fetchSongDetails = useCallback(async () => {
     setLoading(true);
@@ -66,15 +71,14 @@ const SongEngine = () => {
         });
 
         if (urlResponse.ok) {
-          const urlData: UrlData[] = await urlResponse.json(); // Assuming the response is an array of UrlData objects
+          const urlData: UrlData[] = await urlResponse.json();
           songData.presignedUrl = urlData.find((url: UrlData) => url.objectKey === songData.r2Id)?.url;
           setSelectedSong(songData);
-          setIsSongPlaying(true); // Start playing the song
+          setIsSongPlaying(true);
         }
       } else {
-        // If no song is returned, set selectedSong to null to unload the right pane
         setSelectedSong(null);
-        setIsSongPlaying(false); // Stop playing the song
+        setIsSongPlaying(false);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -94,13 +98,13 @@ const SongEngine = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedSong) return;
-
+    if (!selectedSong || !userId) return;
+  
     const token = await getToken();
     const submissionData = { ...feedback, r2Id: selectedSong.r2Id, reviewerUserId: userId, uploaderUserId: selectedSong.uploaderUserId };
-
+  
     try {
-      await fetch('/api/uploadFeedbackForm', {
+      const feedbackResponse = await fetch('/api/uploadFeedbackForm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,31 +112,44 @@ const SongEngine = () => {
         },
         body: JSON.stringify(submissionData),
       });
-
-      await fetch('/api/removeFromQueue', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ r2Id: selectedSong.r2Id, timestamp: selectedSong.timestamp }),
-      });
-
-      // Fetch the next song
-      await fetchSongDetails();
-
-      // Reset feedback form
-      setFeedback({
-        productionFeedback: '',
-        instrumentationFeedback: '',
-        songwritingFeedback: '',
-        vocalsFeedback: '',
-        otherFeedback: ''
-      });
+  
+      if (feedbackResponse.ok) {
+        // Display the success notification here
+        toast.success('Feedback submitted successfully');
+  
+        dispatch(addPoints({ userId, points: 100 }));
+  
+        // Remove the song from the queue
+        await fetch('/api/removeFromQueue', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ r2Id: selectedSong.r2Id, timestamp: selectedSong.timestamp }),
+        });
+  
+        // Fetch the next song
+        await fetchSongDetails();
+  
+        // Reset feedback form
+        setFeedback({
+          productionFeedback: '',
+          instrumentationFeedback: '',
+          songwritingFeedback: '',
+          vocalsFeedback: '',
+          otherFeedback: ''
+        });
+      } else {
+        console.error('Error submitting feedback:', await feedbackResponse.text());
+        toast.error('Failed to submit feedback');
+      }
     } catch (error) {
       console.error('Error submitting feedback:', error);
+      toast.error(`Error submitting feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
+  
 
   // Form input and label classes
   const inputClass = classNames(

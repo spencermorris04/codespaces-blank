@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import MusicPlayer from '../../components/MusicPlayer';
-import SongCard from '../../components/SongCard';
-import UploadSongToQueue from '../../components/UploadSongToQueue';
+import MusicPlayer from '../../../components/MusicPlayer';
+import SongCard from '../../../components/SongCard';
+import UploadSongToQueue from '../../../components/UploadSongToQueue';
 
 // Define your Song interface (as before)
 interface Song {

@@ -15,6 +15,7 @@ export const userDetails = mysqlTable('user_details', {
   bio: text('bio'),
   proficiencyLevel: varchar('proficiencyLevel', { length: 255 }), // Store as varchar
   instruments: text('instruments'),
+  totalPoints: int('totalPoints').default(0), // Default to 0
   favoriteBands: text('favoriteBands'),
   favoriteGenres: text('favoriteGenres')
 });
@@ -45,11 +46,13 @@ export const songFeedback = mysqlTable('songFeedback', {
   otherFeedback: text('otherFeedback')
 });
 
-export const points = mysqlTable("points", {
+// PointsTransactions table
+export const pointsTransactions = mysqlTable('points', {
   id: serial("id").primaryKey(),
-  userId: int("user_id"),
-  transactionAmount: int('transaction_amount'),
-  transactionType: varchar("transaction_type", { length: 255 }),
+  userId: varchar('userId', { length: 255 }).notNull(),
+  points: int('points').notNull(),
+  transactionType: varchar('transactionType', { length: 255 }).notNull(), // e.g., AddSongToQueue, PeerReviewRedemption, ExpertReviewRedemption
+  timestamp: timestamp('timestamp', { mode: 'date' }) // Use 'date' mode for datetime functionality
 });
 
 // New Queue table
@@ -71,6 +74,6 @@ export default {
   userDetails,
   songs,
   songFeedback,
-  points,
+  pointsTransactions,
   queue
 };

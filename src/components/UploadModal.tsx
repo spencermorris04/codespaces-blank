@@ -7,14 +7,18 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '@mui/icons-material/Close';
 
-const UploadModalComponent = () => {
+interface UploadModalComponentProps {
+  onClose: () => void;  // Define the type for the onClose prop
+}
+
+const UploadModalComponent: React.FC<UploadModalComponentProps> = ({ onClose }) => {
   const [fileUUID, setFileUUID] = useState<string>('');
   const [open, setOpen] = useState<boolean>(true);
   const { userId, getToken } = useAuth();
 
-  const handleClose = useCallback(() => {
-    setOpen(false);
-  }, []);
+  const handleClose = () => {
+    onClose(); // Use the passed onClose function to sync state
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {

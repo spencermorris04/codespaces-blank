@@ -10,8 +10,11 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import UploadComponent from './UploadButton';
 import TextField from '@mui/material/TextField';
-import React from 'react';
-import UploadModalComponent from './UploadModal'
+import UploadModalComponent from './UploadModal';
+import React, { useState, useEffect } from 'react';
+import { useUser } from "@clerk/nextjs";
+
+
 
 
 function classNames(...classes: Array<string | false | undefined | null>): string {
@@ -63,7 +66,36 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const TopNavbar = () => {
+  const [points, setPoints] = useState(0);
   const [open, setOpen] = React.useState(false);
+  const { user } = useUser();
+
+  const fetchUserPoints = async () => {
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/getUserPoints', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPoints(data.totalPoints);
+      }
+    } catch (error) {
+      console.error('Error fetching user points:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserPoints();
+  }, [user]);
+
+  // Handle open/close for modal
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -176,11 +208,13 @@ const TopNavbar = () => {
 
 
         <div className="flex-grow" />
-        <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
-        <Typography variant="body1" color="inherit" component="div">
-          Points: <span className="font-semibold text-black">100</span> {/* Replace with dynamic points */}
-        </Typography>
-        </div>
+    <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
+      <Typography variant="body1" color="inherit" component="div">
+        Points: <span className="font-semibold text-black">{points}</span>
+      </Typography>
+    </div>
+
+    
         <div className="bg-white rounded-md outline outline-3 mr-4">
         <IconButton color="inherit" aria-label="notifications">
           <NotificationsIcon />
@@ -192,7 +226,7 @@ const TopNavbar = () => {
       </Button>
         </div>
 
-      {open && <UploadModalComponent />}
+        {open && <UploadModalComponent onClose={handleClose} />}
       </Toolbar>
     </AppBar>
   );
