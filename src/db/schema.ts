@@ -43,7 +43,8 @@ export const songFeedback = mysqlTable('songFeedback', {
   instrumentationFeedback: text('instrumentationFeedback'),
   songwritingFeedback: text('songwritingFeedback'),
   vocalsFeedback: text('vocalsFeedback'),
-  otherFeedback: text('otherFeedback')
+  otherFeedback: text('otherFeedback'),
+  timestamp: timestamp('timestamp', { mode: 'date' }) // Add this line
 });
 
 // PointsTransactions table

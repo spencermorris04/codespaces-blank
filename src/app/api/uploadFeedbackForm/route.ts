@@ -6,14 +6,8 @@ export async function POST(request: Request) {
     const feedbackData = await request.json();
 
     await db.insert(songFeedback).values({
-      reviewerUserId: feedbackData.reviewerUserId,
-      uploaderUserId: feedbackData.uploaderUserId,
-      r2Id: feedbackData.r2Id,
-      productionFeedback: feedbackData.productionFeedback,
-      instrumentationFeedback: feedbackData.instrumentationFeedback,
-      songwritingFeedback: feedbackData.songwritingFeedback,
-      vocalsFeedback: feedbackData.vocalsFeedback,
-      otherFeedback: feedbackData.otherFeedback
+      ...feedbackData,
+      timestamp: new Date() // Add current timestamp
     });
 
     return new Response(JSON.stringify({ message: 'Feedback submitted successfully' }), { status: 200 });

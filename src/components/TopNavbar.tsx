@@ -13,7 +13,10 @@ import TextField from '@mui/material/TextField';
 import UploadModalComponent from './UploadModal';
 import React, { useState, useEffect } from 'react';
 import { useUser } from "@clerk/nextjs";
-
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchUserPoints } from '../app/store/slices/pointsSlice'; // Adjust the path as needed
+import { RootState, AppDispatch } from '../app/store/store';
+import { useSpring, animated } from 'react-spring';
 
 
 
@@ -66,34 +69,33 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const TopNavbar = () => {
-  const [points, setPoints] = useState(0);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [pointsDisplay, setPointsDisplay] = useState<number | string>('');
+  const [lastPoints, setLastPoints] = useState<number>(0);
   const { user } = useUser();
+  const dispatch = useDispatch<AppDispatch>(); // Correctly type the dispatch
 
-  const fetchUserPoints = async () => {
-    if (!user) return;
-
-    try {
-      const response = await fetch('/api/getUserPoints', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: user.id }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setPoints(data.totalPoints);
-      }
-    } catch (error) {
-      console.error('Error fetching user points:', error);
-    }
-  };
+  // Get the total points from Redux store
+  const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
 
   useEffect(() => {
-    fetchUserPoints();
-  }, [user]);
+    if (user) {
+      dispatch(fetchUserPoints(user.id));
+    }
+  }, [user, dispatch]);
+
+  useEffect(() => {
+    if (totalPoints !== lastPoints) {
+      setPointsDisplay(totalPoints);
+      setLastPoints(totalPoints);
+    }
+  }, [totalPoints, lastPoints]);
+
+  // Spring animation for the points
+  const springProps = useSpring({ 
+    number: totalPoints, 
+    from: { number: lastPoints }
+  });
 
   // Handle open/close for modal
   const handleOpen = () => setOpen(true);
@@ -114,7 +116,9 @@ const TopNavbar = () => {
 
   return (
     <AppBar position="static">
-      <Toolbar className="bg-neo-red text-black">
+      <Toolbar className="bg-neo-red text-black flex justify-between">
+                {/* Left-aligned items */}
+                <div className="flex items-center">
         <Search>
           <SearchIconWrapper>
             <SearchIcon />
@@ -204,26 +208,33 @@ const TopNavbar = () => {
             </Menu.Items>
           </Transition>
         </Menu>
-
-
-
-        <div className="flex-grow" />
-    <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
-      <Typography variant="body1" color="inherit" component="div">
-        Points: <span className="font-semibold text-black">{points}</span>
-      </Typography>
-    </div>
-
-    
-        <div className="bg-white rounded-md outline outline-3 mr-4">
-        <IconButton color="inherit" aria-label="notifications">
-          <NotificationsIcon />
-        </IconButton>
         </div>
-        <div className="bg-white px-2 rounded-md outline outline-3">
-        <Button color="inherit" onClick={handleOpen}>
-        Upload
-      </Button>
+
+
+
+
+        {/* Right-aligned items */}
+        <div className="flex items-center">
+          <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
+            <Typography variant="body1" color="inherit" component="div">
+              Points: 
+              <animated.span className="font-semibold text-black">
+                {springProps.number.to(n => n.toFixed(0))}
+              </animated.span>
+            </Typography>
+          </div>
+
+          <div className="bg-white rounded-md outline outline-3 mr-4">
+            <IconButton color="inherit" aria-label="notifications">
+              <NotificationsIcon />
+            </IconButton>
+          </div>
+
+          <div className="bg-white px-2 rounded-md outline outline-3">
+            <Button color="inherit" onClick={handleOpen}>
+              Upload
+            </Button>
+          </div>
         </div>
 
         {open && <UploadModalComponent onClose={handleClose} />}
@@ -231,5 +242,6 @@ const TopNavbar = () => {
     </AppBar>
   );
 };
+
 
 export default TopNavbar;

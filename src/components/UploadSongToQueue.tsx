@@ -24,7 +24,7 @@ const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song }) => {
   const { userId, getToken } = useAuth();
   const dispatch = useDispatch<AppDispatch>(); // Use the AppDispatch type here
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
-  const costOfAddingToQueue = 100;
+  const costOfAddingToQueue = 200;
 
   useEffect(() => {
     if (userId) {

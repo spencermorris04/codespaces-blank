@@ -7,6 +7,7 @@ import TopNavbar from '~/components/TopNavbar';
 const ClientSideLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <Provider store={store}>
+        <div className="w-full">
       <div className="flex-1 flex flex-col">
         <div className="border-b-4 border-black">
           <TopNavbar />
@@ -14,6 +15,7 @@ const ClientSideLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         <main className="flex-1 overflow-y-auto bg-neo-light-cream">
           {children}
         </main>
+      </div>
       </div>
     </Provider>
   );
