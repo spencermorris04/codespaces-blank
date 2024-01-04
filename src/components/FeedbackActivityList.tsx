@@ -7,7 +7,6 @@ interface FeedbackActivityListProps {
   userId: string;
 }
 
-
 const FeedbackActivityList: React.FC<FeedbackActivityListProps> = ({ userId }) => {
   const [activities, setActivities] = useState<FeedbackActivity[]>([]);
   const { getToken } = useAuth();
@@ -34,7 +33,7 @@ const FeedbackActivityList: React.FC<FeedbackActivityListProps> = ({ userId }) =
   }, [userId, getToken]);
 
   return (
-    <div className="bg-neo-light-pink p-6 rounded-lg outline outline-4">
+    <div className="bg-neo-light-pink p-6 rounded-lg">
       <h2 className="text-xl font-bold mb-4">Recent Feedback</h2>
       <ul role="list" className="-mb-8">
         {activities.map((activity, index) => (

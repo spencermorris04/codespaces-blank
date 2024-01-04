@@ -1,32 +1,23 @@
+// src/app/api/getFeedbackSongs/route.ts
 import { db } from '~/db/index';
-import { queue } from '~/db/schema';
-import { ne, sql, asc } from 'drizzle-orm';
+import { songFeedback } from '~/db/schema';
+import { eq, or } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
     const { userId } = await request.json();
 
-    // Selecting all the fields from the queue table based on your schema
-    const songRecord = await db.select({
-      id: queue.id,
-      songTitle: queue.songTitle,
-      r2Id: queue.r2Id,
-      uploaderUserId: queue.uploaderUserId,
-      genre: queue.genre,
-      instruments: queue.instruments,
-      contribution: queue.contribution,
-      description: queue.description,
-      lyrics: queue.lyrics,
-      timestamp: queue.timestamp
-    }).from(queue)
-      .where(ne(sql`${queue.uploaderUserId}`, sql`${userId}`))
-      .orderBy(asc(queue.timestamp))
-      .limit(1)
-      .execute();
+    // Retrieve all unique r2Id's where the reviewerUserId or uploaderUserId matches the userId
+    const feedbackSongs = await db.selectDistinct({
+      r2Id: songFeedback.r2Id
+    })
+    .from(songFeedback)
+    .where(or(eq(songFeedback.reviewerUserId, userId), eq(songFeedback.uploaderUserId, userId)))
+    .execute();
 
-    return new Response(JSON.stringify(songRecord), { status: 200 });
+    return new Response(JSON.stringify(feedbackSongs), { status: 200 });
   } catch (error) {
-    console.error("Error retrieving the oldest song from queue:", error);
-    return new Response(JSON.stringify({ error: "Error retrieving the oldest song from queue" }), { status: 500 });
+    console.error("Error retrieving feedback songs:", error);
+    return new Response(JSON.stringify({ error: "Error retrieving feedback songs" }), { status: 500 });
   }
 }

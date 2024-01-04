@@ -34,7 +34,7 @@ export type Song = {
     // Any other props needed for the component
   }
   
-  export type SongFeedback {
+  export type SongFeedback = {
     id: number;
     reviewerUserId: string;
     uploaderUserId: string;
@@ -45,7 +45,7 @@ export type Song = {
     vocalsFeedback: string;
     otherFeedback: string;
     timestamp: string; // ISO string format of Date
-  }
+  };
   
   export interface FeedbackActivity {
     id: number;

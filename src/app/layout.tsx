@@ -29,7 +29,7 @@ export default function RootLayout({
           
           {/* Main content area with Top Navbar */}
           <div className="flex-1 flex flex-col">
-            <main className="flex-1 overflow-y-auto bg-neo-light-cream flex-grow">
+            <main className="flex-1 h-full overflow-y-auto bg-neo-light-cream">
               {children}
             </main>
           </div>

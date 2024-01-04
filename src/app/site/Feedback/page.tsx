@@ -79,13 +79,16 @@ interface SongFeedback {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId: user?.id }),
+        body: JSON.stringify({ userId: user?.id }), // Send userId in the request body
       });
       if (response.ok) {
         const data = await response.json();
         setSongFeedbacks(data);
+      } else {
+        // Handle errors, maybe set an error state, and display a message to the user
+        console.error("Failed to fetch song feedbacks");
       }
-    };
+    };   
   
     return (
       <div className="flex flex-row mx-4 mt-3 h-[90vh]">

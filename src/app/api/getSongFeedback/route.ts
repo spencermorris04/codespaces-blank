@@ -1,23 +1,20 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
 import { db } from '~/db/index';
 import { songFeedback } from '~/db/schema';
 import { eq } from 'drizzle-orm';
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(request: Request) {
   try {
-    const { songId } = req.body;
+    const { r2Id } = await request.json(); // Assuming the song's identifier is passed as 'r2Id'
 
-    // Fetch feedback for a specific song
+    // Fetch feedback for the specific song
     const feedback = await db.select()
       .from(songFeedback)
-      .where(eq(songFeedback.r2Id, songId))
+      .where(eq(songFeedback.r2Id, r2Id))
       .execute();
 
-    res.status(200).json(feedback);
+    return new Response(JSON.stringify(feedback), { status: 200 });
   } catch (error) {
     console.error("Error retrieving feedback for the song:", error);
-    res.status(500).json({ error: "Error retrieving feedback for the song" });
+    return new Response(JSON.stringify({ error: "Error retrieving feedback for the song" }), { status: 500 });
   }
 }
-
-export default handler;
