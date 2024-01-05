@@ -1,7 +1,9 @@
+"use client";
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/nextjs';
 import { formatDistanceToNowStrict } from 'date-fns';
-import { FeedbackActivity } from '../util/types/types'; // Define this type according to your schema
+import { FeedbackActivity } from '../util/types/types';
+import Link from 'next/link';
 
 interface FeedbackActivityListProps {
   userId: string;
@@ -45,16 +47,30 @@ const FeedbackActivityList: React.FC<FeedbackActivityListProps> = ({ userId }) =
               <div className="relative flex space-x-3">
                 <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                   <p className="text-sm text-gray-500">
-                    Feedback for song: <strong>{activity.songTitle}</strong>
+                    {activity.reviewerUserId === userId ? (
+                      `You reviewed `
+                    ) : (
+                      <Link href={`/site/user/${activity.reviewerUserId}`}>
+                        <div className="text-blue-600 hover:text-blue-800">{activity.reviewerUsername || 'Unknown User'}</div>
+                      </Link>
+                    )}
+                    {` ${activity.songTitle} by `}
+                    {activity.uploaderUserId === userId ? (
+                      'you'
+                    ) : (
+                      <Link href={`/site/user/${activity.uploaderUserId}`}>
+                        <div className="text-blue-600 hover:text-blue-800">{activity.uploaderUsername || 'Unknown User'}</div>
+                      </Link>
+                    )}
                   </p>
                   <div className="whitespace-nowrap text-right text-sm text-gray-500">
                     <time dateTime={activity.timestamp}>{formatRelativeTime(activity.timestamp)}</time>
                   </div>
                 </div>
               </div>
-              </div>
-            </li>
-          ))}
+            </div>
+          </li>
+        ))}
       </ul>
     </div>
   );
@@ -72,6 +88,5 @@ function formatRelativeTime(timestamp: string) {
 
   return formatDistanceToNowStrict(date, { addSuffix: true });
 }
-
 
 export default FeedbackActivityList;

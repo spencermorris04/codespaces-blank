@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import { useAuth } from '@clerk/nextjs';
 import { SongFeedback, Song } from '../util/types/types'; // Adjust the path and types as per your project
 import Link from 'next/link';
+import ProfileMusicPlayer from './MusicPlayer'; // Adjust the import path as necessary
 
 interface FeedbackSongCardProps {
   song: Song;
@@ -19,6 +20,7 @@ const FeedbackSongCard: React.FC<FeedbackSongCardProps> = ({ song }) => {
   const [open, setOpen] = useState(false);
   const [feedback, setFeedback] = useState<SongFeedback[]>([]);
   const [usernames, setUsernames] = useState<{ [key: string]: string }>({});
+  const [songUrl, setSongUrl] = useState<string>('');
   const { getToken } = useAuth();
 
   const fetchUserDetails = async (userId: string, token: string): Promise<string> => {
@@ -38,6 +40,42 @@ const FeedbackSongCard: React.FC<FeedbackSongCardProps> = ({ song }) => {
       return '';
     }
   };
+
+  const fetchSongUrl = async (objectKey: string) => {
+    try {
+      const token = await getToken();
+      if (token === null) {
+        console.error('No token available');
+        return;
+      }
+  
+      const response = await fetch('/api/getR2SongUrls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ objectKeys: [objectKey] }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.length > 0 && data[0].url) {
+          setSongUrl(data[0].url);
+        }
+      } else {
+        console.error('Failed to fetch song URL');
+      }
+    } catch (error) {
+      console.error('Error fetching song URL:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (song.r2Id) {
+      fetchSongUrl(song.r2Id);
+    }
+  }, [song.r2Id]);
 
   const handleOpen = async () => {
     setOpen(true);
@@ -101,20 +139,24 @@ const FeedbackSongCard: React.FC<FeedbackSongCardProps> = ({ song }) => {
 
   return (
     <>
-      <div onClick={handleOpen} className="cursor-pointer bg-white p-4 rounded-lg">
+    <div className="w-fit bg-white rounded-3xl">
+      <div onClick={handleOpen} className="cursor-pointer pl-8 py-4 place-self-center self-center">
         <h3 className="text-lg font-semibold">{song.songTitle}</h3>
         <p className="text-sm text-gray-600">Genre: {song.genre}</p>
         <p className="text-sm text-gray-600">Contribution: {song.instruments}</p>
-        <p className="text-sm text-gray-600">Genre: {song.timestamp}</p>
-
+        <p className="text-sm text-gray-600">Timestamp: {song.timestamp}</p>
       </div>
+      <div>
+          {songUrl && <ProfileMusicPlayer songUrl={songUrl} />}
+      </div>
+    </div>
 
-      <Modal open={open} onClose={handleClose}>
-        <Box sx={style}>
-          <h2 className="text-2xl font-bold mb-4">{song.songTitle} Feedback</h2>
+      <Modal open={open} onClose={handleClose} className="flex">
+        <Box sx={style} className="h-2/3 w-1/3 overflow-y-scroll no-scrollbar p-4 bg-neo-light-pink">
+          <h2 className="text-2xl font-bold mb-4 text-center">{song.songTitle} Feedback</h2>
           {feedback.length > 0 ? (
             feedback.map((fb, index) => (
-              <div key={index} className="mb-4">
+              <div key={index} className="mb-4 outline outline-4 p-2 rounded-lg bg-white">
                 <p>
                   <strong>User:</strong> 
                   <Link href={`/site/user/${fb.reviewerUserId}`}>

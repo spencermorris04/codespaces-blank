@@ -115,18 +115,18 @@ export default function UserDetailsPage({ params }: { params: { userId: string }
       </div>
 
       {/* Right Pane - Feedback Activity and Song Cards */}
-      <div className="w-2/3 flex flex-col mt-4 mr-6 ml-4">
+      <div className="w-2/3 flex flex-col mt-4 mr-10 ml-4 pl-10">
         {/* Feedback Activity */}
         <div className="overflow-y-scroll no-scrollbar bg-neo-light-pink h-1/2 outline outline-4 rounded-lg mb-4">
           <FeedbackActivityList userId={userId} />
         </div>
 
         {/* Song Cards */}
-        <div className="flex-1 overflow-y-scroll no-scrollbar mb-4 pb-2 bg-neo-light-pink outline outline-4 p-1 rounded-lg">
-            <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
-            <div className="grid grid-cols-2 gap-y-5 gap-x-5 items-stretch">
+        <div className="flex-1 overflow-y-scroll no-scrollbar mb-4 bg-neo-light-pink outline outline-4 p-1 rounded-lg">
+            <div ref={listRef} className="px-6 pt-2 overflow-y-auto no-scrollbar h-full">
+            <div className="grid grid-cols-3 gap-y-3 gap-x-5 place-items-center">
                 {userSongs.map(song => (
-                <div key={song.id} className="flex flex-col outline outline-4 rounded-lg">
+                <div key={song.id} className="flex flex-col outline outline-4 rounded-3xl w-fit">
                     <FeedbackSongCard song={song} />
                 </div>
                 ))}

@@ -147,7 +147,7 @@ const SongEngine = () => {
               </div>
               <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Lyrics:</strong>
-                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap">{selectedSong.lyrics}</p>
+                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap h-[250px] overflow-y-scroll no-scrollbar">{selectedSong.lyrics}</p>
               </div>
             </div>
             <div className="self-center flex">

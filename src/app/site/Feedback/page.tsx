@@ -91,14 +91,18 @@ interface SongFeedback {
     };   
   
     return (
-      <div className="flex flex-row mx-4 mt-3 h-[90vh]">
-        <div className="flex-1 w-1/2 px-4 py-4 overflow-y-auto">
+      <div className="flex flex-row mx-8 mt-8 h-[85vh]">
+        <div className="flex-1 w-1/2 px-4 py-4 overflow-y-scroll no-scrollbar outline outline-4 bg-neo-light-pink rounded-lg mr-6">
           <FeedbackActivityList userId={user?.id || ''} />
         </div>
-        <div className="flex-1 w-1/2 px-4 py-4 overflow-y-auto">
-          {songFeedbacks.map((feedback) => (
-            <FeedbackSongCard key={feedback.id} song={feedback} />
-          ))}
+        <div className="bg-neo-light-pink outline outline-4 py-4 px-4 rounded-lg overflow-y-scroll no-scrollbar">
+          <div className="grid h-fit grid-cols-3 gap-x-4 gap-y-4 place-items-center">
+            {songFeedbacks.map((feedback) => (
+                <div key={feedback.id} className="flex flex-col outline outline-4 rounded-3xl w-fit">
+              <FeedbackSongCard key={feedback.id} song={feedback} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

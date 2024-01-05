@@ -156,7 +156,7 @@ const ProjectsPage = () => {
         {selectedSong ? (
           <>
             <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
-            <div className="flex-grow overflow-y-auto">
+            <div className="flex-grow overflow-y-auto h-2/3">
               <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Genre:</strong> {selectedSong.genre}
               </div>
@@ -172,10 +172,10 @@ const ProjectsPage = () => {
               </div>
               <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                 <strong>Lyrics:</strong>
-                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap">{selectedSong.lyrics}</p>
+                <p className="h-[250px] mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap overflow-y-scroll no-scrollbar">{selectedSong.lyrics}</p>
               </div>
             </div>
-            <div className="self-center flex">
+            <div className="self-center flex mt-4">
             <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
             </div>
 
