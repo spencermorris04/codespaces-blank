@@ -47,16 +47,18 @@ export type Song = {
     timestamp: string; // ISO string format of Date
   };
   
-  export interface FeedbackActivity {
+  export type FeedbackActivity = {
     id: number;
-    songTitle: string;        // Title of the song
-    reviewerUserId: string;   // ID of the user who reviewed the song
-    uploaderUserId: string;   // ID of the user who uploaded the song
-    r2Id: string;             // Reference ID for the song (if applicable)
-    productionFeedback: string;   // Feedback on production
-    instrumentationFeedback: string; // Feedback on instrumentation
-    songwritingFeedback: string;  // Feedback on songwriting
-    vocalsFeedback: string;       // Feedback on vocals
-    otherFeedback: string;        // Any other feedback
-    timestamp: string;            // Timestamp of when the feedback was given
-  }
+    songTitle: string;
+    reviewerUserId: string;
+    uploaderUserId: string;
+    r2Id: string;
+    productionFeedback: string;
+    instrumentationFeedback: string;
+    songwritingFeedback: string;
+    vocalsFeedback: string;
+    otherFeedback: string;
+    timestamp: string;
+    reviewerUsername?: string; // Optional if this data might not always be present
+    uploaderUsername?: string; // Optional if this data might not always be present
+  };
