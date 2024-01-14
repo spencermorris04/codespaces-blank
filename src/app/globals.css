@@ -21,6 +21,18 @@ html, body {
   }
 }
 
+/* Styles for the sidebar */
+.sidebar {
+    border-right: 4px solid black; /* Add your existing sidebar styles here */
+}
+
+/* Media query to hide sidebar on mobile devices */
+@media screen and (max-width: 768px) { /* Adjust max-width as per your mobile view breakpoint */
+    .sidebar {
+        display: none;
+    }
+}
+
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
@@ -30,5 +42,5 @@ html, body {
   .no-scrollbar {
       -ms-overflow-style: none;  /* IE and Edge */
       scrollbar-width: none;  /* Firefox */
-}
+  }
 }

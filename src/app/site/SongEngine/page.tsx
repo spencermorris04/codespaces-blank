@@ -1,12 +1,19 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/nextjs';
-import MusicPlayer from '../../../components/MusicPlayer';
-import { useDispatch } from 'react-redux';
+import MusicPlayer from '~/components/MusicPlayer';
 import { addPoints } from '../../store/slices/pointsSlice';
 import { AppDispatch } from '../../store/store';
 import { toast, ToastContainer } from 'react-toastify';
-import FeedbackForm from '../../../components/FeedbackForm'; // Import the FeedbackForm component
+import FeedbackForm from '~/components/FeedbackForm';
+import MobileMusicPlayer from '~/components/MobileMusicPlayer';
+import { MobileFeedbackForm, getCurrentFeedback, resetCurrentFeedback } from '~/components/MobileFeedbackForm';
+import { useSwipeable } from 'react-swipeable';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateFeedback, resetFeedback } from '~/app/store/slices/feedbackSlice';
+import { RootState } from '~/app/store/store';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 interface Song {
   id: number;
@@ -27,12 +34,77 @@ interface UrlData {
   url: string;
 }
 
+interface SongEngineState {
+  loading: boolean;
+  song: Song | null;
+}
+
+
+const isMobileDevice = () => {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+};
+
 const SongEngine = () => {
+  const [state, setState] = useState<SongEngineState>({ loading: true, song: null });
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSongPlaying, setIsSongPlaying] = useState(false);
   const { userId, getToken } = useAuth();
   const dispatch = useDispatch<AppDispatch>();
+  const isMobile = isMobileDevice();
+
+  const [isSwiping, setIsSwiping] = useState(false);
+
+
+  const currentFeedback = useSelector((state: RootState) => state.feedback);
+
+    // Function to submit feedback
+    const submitFeedback = async () => {
+      if (!selectedSong || !userId) return;
+  
+      const token = await getToken();
+      const submissionData = {
+        ...currentFeedback,
+        r2Id: selectedSong.r2Id,
+        reviewerUserId: userId,
+        uploaderUserId: selectedSong.uploaderUserId,
+      };
+  
+    
+      try {
+        const response = await fetch('/api/uploadFeedbackForm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify(submissionData),
+        });
+    
+        if (!response.ok) {
+          throw new Error('Feedback submission failed');
+      }
+
+      toast.success('Feedback submitted successfully');
+      dispatch(resetFeedback()); // Reset feedback in Redux store
+      onFeedbackSubmitted();
+    } catch (error) {
+      toast.error(`Error submitting feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleSwipeUp = async () => {
+    if (isMobile && selectedSong) {
+      setIsSwiping(true);
+      await submitFeedback();
+      // Trigger the animation to swipe up
+    }
+  };
+
+    const swipeHandlers = useSwipeable({
+        onSwipedUp: handleSwipeUp,
+        trackMouse: true // Optional, based on your requirement
+    }); 
 
   const fetchSongDetails = useCallback(async () => {
     setLoading(true);
@@ -113,51 +185,71 @@ const SongEngine = () => {
     }
   };
 
+  useEffect(() => {
+    if (isSwiping) {
+      // When swipe animation starts, fetch the next song
+      fetchSongDetails().then(() => {
+        setIsSwiping(false); // Reset the swipe state once the song is loaded
+      });
+    }
+  }, [isSwiping, fetchSongDetails]);
+
+  // Framer Motion animation variants for swipe up
+  const variants = {
+    hidden: { y: '100%' },
+    visible: { y: 0 },
+    exit: { y: '-100%' },
+  };
+
   return (
-    <div className="flex flex-row mx-4 mt-3 h-[90vh]">
+    <div className="flex flex-row mx-4 mt-3 h-[90vh]" {...swipeHandlers}>
       {/* Left Pane - Feedback Form */}
+      {/* Conditional rendering for FeedbackForm based on device type */}
       <div className="flex-1 w-3/5 px-4 py-4 overflow-y-auto">
         {selectedSong && (
-          <FeedbackForm 
-            selectedSong={selectedSong} 
-            onFeedbackSubmitted={onFeedbackSubmitted} 
-          />
+          isMobile
+          ? <MobileFeedbackForm selectedSong={selectedSong} onFeedbackSubmitted={onFeedbackSubmitted} submitFeedback={submitFeedback} />
+          : <FeedbackForm selectedSong={selectedSong} onFeedbackSubmitted={onFeedbackSubmitted} />
         )}
       </div>
-
+  
       {/* Right Pane - Song Details and Music Player */}
-      <div className="flex-2 w-2/5 px-4 py-4 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg overflow-y-auto items-center">
-        {selectedSong ? (
-          <>
-            <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
-            <div className="overflow-y-auto">
-              {/* Display song details */}
-              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
-                <strong>Genre:</strong> {selectedSong.genre}
-              </div>
-              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
-                <strong>Instruments:</strong> {selectedSong.instruments}
-              </div>
-              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
-                <strong>Contribution:</strong> {selectedSong.contribution}
-              </div>
-              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
-                <strong>Description:</strong>
-                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black">{selectedSong.description}</p>
-              </div>
-              <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
-                <strong>Lyrics:</strong>
-                <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap h-[250px] overflow-y-scroll no-scrollbar">{selectedSong.lyrics}</p>
-              </div>
-            </div>
-            <div className="self-center flex">
-              <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
-            </div>
-          </>
+      {isMobile ? (
+          selectedSong && <MobileMusicPlayer song={selectedSong} />
         ) : (
-          <div className="text-center">Loading song details...</div>
+          <div className="flex-2 w-2/5 px-4 py-4 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg overflow-y-auto items-center">
+            {selectedSong ? (
+              <>
+                <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
+                <div className="overflow-y-auto">
+                  {/* Display song details */}
+                  <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                    <strong>Genre:</strong> {selectedSong.genre}
+                  </div>
+                  <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                    <strong>Instruments:</strong> {selectedSong.instruments}
+                  </div>
+                  <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                    <strong>Contribution:</strong> {selectedSong.contribution}
+                  </div>
+                  <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                    <strong>Description:</strong>
+                    <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black">{selectedSong.description}</p>
+                  </div>
+                  <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
+                    <strong>Lyrics:</strong>
+                    <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap h-[250px] overflow-y-scroll no-scrollbar">{selectedSong.lyrics}</p>
+                  </div>
+                </div>
+                <div className="self-center flex">
+                  <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
+                </div>
+              </>
+            ) : (
+              <div className="text-center">Loading song details...</div>
+            )}
+          </div>
         )}
-      </div>
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

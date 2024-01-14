@@ -23,8 +23,8 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${publicsans.className} flex relative h-screen`}>
           {/* Sidebar */}
-          <div className="flex-none border-r-4 border-black"> {/* Adjust width as needed */}
-            <Sidebar />
+          <div className="sidebar">
+              <Sidebar />
           </div>
           
           {/* Main content area with Top Navbar */}
@@ -36,11 +36,6 @@ export default function RootLayout({
 
           {/* Animated GIF in the bottom right corner */}
           <div className="absolute bottom-0 right-0 mb-4 mr-4">
-            <img 
-              src="https://cdn.7tv.app/emote/62f56f44971f4d663eb618ba/4x.gif" 
-              alt="Animated Emote" 
-              style={{ width: '150px', height: '150px' }}
-            />
           </div>
         </body>
       </html>
