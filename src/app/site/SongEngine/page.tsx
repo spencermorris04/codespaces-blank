@@ -41,7 +41,12 @@ interface SongEngineState {
 
 
 const isMobileDevice = () => {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  // Check if the code is running in a browser environment
+  if (typeof window !== 'undefined') {
+    return /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
+  }
+  // Return false if not in a browser environment (e.g., server-side rendering)
+  return false;
 };
 
 const SongEngine = () => {

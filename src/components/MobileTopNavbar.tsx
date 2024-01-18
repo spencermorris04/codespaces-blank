@@ -113,21 +113,27 @@ const MobileTopNavbar = () => {
 
     // Toggle the menu open/close
     const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
+      setIsMenuOpen(!isMenuOpen);
+  };
+
+    // Function to handle menu link click
+    const handleMenuLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+      setIsMenuOpen(false); // Close the menu
     };
+  
 
   // Menu component with links
   const MenuComponent = () => (
-    <div className={`absolute top-0 left-0 w-full h-screen bg-white z-50 ${!isMenuOpen && 'hidden'}`}>
-      <ul className="space-y-2 p-4">
+    <div className={`absolute top-14 left-1 w-fit px-1 h-fit bg-black outline outline-3 rounded-lg z-50 ${!isMenuOpen && 'hidden'}`}>
+    <ul className="space-y-2 p-4">
         {/* Add your menu items here */}
-        <li><Link href="/site">Dashboard</Link></li>
-        <li><Link href="/site/SongEngine">Song Engine</Link></li>
-        <li><Link href="/site/Projects">Projects</Link></li>
-        <li><Link href="/site/Feedback">Feedback</Link></li>
-        <li><Link href="/site/League">League</Link></li>
-        <li><Link href="/site/Messages">Messages</Link></li>
-        <li><Link href="/site/Settings">Settings</Link></li>
+        <li className=""><Link href="/site">Dashboard</Link></li>
+        <li><Link href="/site/SongEngine" onClick={handleMenuLinkClick}>Song Engine</Link></li>
+        <li><Link href="/site/Projects" onClick={handleMenuLinkClick}>Projects</Link></li>
+        <li><Link href="/site/Feedback" onClick={handleMenuLinkClick}>Feedback</Link></li>
+        <li><Link href="/site/League" onClick={handleMenuLinkClick}>League</Link></li>
+        <li><Link href="/site/Messages" onClick={handleMenuLinkClick}>Messages</Link></li>
+        <li><Link href="/site/Settings" onClick={handleMenuLinkClick}>Settings</Link></li>
       </ul>
     </div>
   );
@@ -140,6 +146,7 @@ const MobileTopNavbar = () => {
           <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleMenu}>
             <MenuIcon />
           </IconButton>
+          <MenuComponent /> {/* Render the MenuComponent here */}
         </div>
 
 

@@ -4,6 +4,7 @@ import { useAuth } from '@clerk/nextjs';
 import MusicPlayer from '../../../components/MusicPlayer';
 import SongCard from '../../../components/SongCard';
 import UploadSongToQueue from '../../../components/UploadSongToQueue';
+import MobileMusicPlayer from '../../../components/MobileMusicPlayer'; // Import the component
 
 // Define your Song interface (as before)
 interface Song {
@@ -24,6 +25,15 @@ interface UrlData {
   url: string;
 }
 
+const isMobileDevice = () => {
+  // Check if the code is running in a browser environment
+  if (typeof window !== 'undefined') {
+    return /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
+  }
+  // Return false if not in a browser environment (e.g., server-side rendering)
+  return false;
+};
+
 const ProjectsPage = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
@@ -31,6 +41,8 @@ const ProjectsPage = () => {
   const { userId, getToken } = useAuth();
   const listRef = useRef<HTMLDivElement>(null);
   const [showScrollArrow, setShowScrollArrow] = useState(false);
+  const isMobile = isMobileDevice(); // Detect if the device is mobile
+
 
   useEffect(() => {
     const fetchUserSongs = async () => {
@@ -135,25 +147,28 @@ const ProjectsPage = () => {
   }
 
   return (
-    <div className="flex h-[90vh] mx-4">
-      {/* Left Pane - List of Song Cards */}
-      <div className="relative flex-1 w-3/5">
-        <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
-          <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
-            {songs.map((song) => (
-              <div key={song.id} className="flex flex-col h-full">
-                <SongCard song={song} onClick={() => handleCardClick(song)} />
-              </div>
-            ))}
+    <>
+      <div className="flex h-[90vh] mx-4">
+        {/* Left Pane - List of Song Cards */}
+        <div className="relative flex-1 w-3/5">
+          <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
+            <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
+              {songs.map((song) => (
+                <div key={song.id} className="flex flex-col h-full">
+                  <SongCard song={song} onClick={() => handleCardClick(song)} />
+                </div>
+              ))}
+            </div>
           </div>
+          {/* Fade effects at the edges */}
+          <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-gradient-to-t from-neo-light-cream to-transparent"></div>
+          <div className="absolute top-0 left-0 right-0 h-4 pointer-events-none bg-gradient-to-t from-transparent to-neo-light-cream"></div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-20 pointer-events-none bg-gradient-to-t from-neo-light-cream to-transparent"></div> {/* Fade effect */}
-        <div className="absolute top-0 left-0 right-0 h-4 pointer-events-none bg-gradient-to-t from-transparent to-neo-light-cream"></div> {/* Fade effect */}
-      </div>
 
-      {/* Right Pane - Song Details and Music Player */}
-      <div className="flex-2 w-2/5 ml-2 my-4 py-4 px-8 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg flex flex-col">
-        {selectedSong ? (
+        {/* Right Pane - Song Details and Music Player for Non-Mobile Devices */}
+        {!isMobile && (
+          <div className="flex-2 w-2/5 ml-2 my-4 py-4 px-8 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg flex flex-col">
+            {selectedSong ? (
           <>
             <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
             <div className="flex-grow overflow-y-auto h-2/3">
@@ -179,16 +194,42 @@ const ProjectsPage = () => {
             <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
             </div>
 
-            {/* Add UploadSongToQueue button */}
-            <div className="mt-6 self-center">
-              <UploadSongToQueue song={selectedSong} />
-            </div>
-          </>
-        ) : (
-          <div className="text-center">Select a song to view details</div>
+                {/* UploadSongToQueue button */}
+                <div className="mt-6 self-center">
+                  <UploadSongToQueue song={selectedSong} />
+                </div>
+              </>
+            ) : (
+              <div className="text-center">Select a song to view details</div>
+            )}
+          </div>
         )}
       </div>
-    </div>
+
+     {/* Mobile Music Player - Render for both cases */}
+     {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0">
+          {/* Render MobileMusicPlayer with selectedSong or an empty placeholder */}
+          {selectedSong ? (
+            <MobileMusicPlayer song={selectedSong} />
+          ) : (
+            <MobileMusicPlayer 
+              song={{
+                id: 0,
+                songTitle: 'No song selected',
+                r2Id: '',
+                presignedUrl: '',
+                genre: '',
+                instruments: '',
+                contribution: '',
+                description: 'Select a song to view details.',
+                lyrics: ''
+              }}
+            />
+          )}
+        </div>
+      )}
+    </>
   );
 };
 
