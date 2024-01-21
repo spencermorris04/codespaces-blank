@@ -338,24 +338,24 @@ import { db } from '~/util/firebase'
         {!isMobile && (
             <div className="w-2/3 flex flex-col bg-black">
                 <div className="overflow-y-auto flex-grow no-scrollbar">
-                {messages.map((message) => (
-                    <div key={message.messageId} className={`p-4 ${message.senderId === userId ? 'text-right' : 'text-left'}`}>
-                    <div className={`inline-block bg-neo-purple outline outline-white outline-2 rounded-t-lg ${message.senderId === userId ? 'rounded-bl-lg' : 'rounded-br-lg'} px-4 py-2`}>
-                        <p className="text-white">{message.content}</p>
-                    </div>
-                    <div className="mt-1">
-                        <small 
-                        className="text-white text-xs" 
-                        style={usernameStyle} 
-                        onMouseEnter={() => setHoveredUsername(typeof message.senderId === 'string' ? message.senderId : null)}
-                        onMouseLeave={() => setHoveredUsername(null)}
-                        >
-                        {message.senderId === userId ? 'you' : message.username}
-                        </small>
-                    </div>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
+                    {messages.map((message) => (
+                        <div key={message.messageId} className={`p-4 ${message.senderId === userId ? 'text-right' : 'text-left'}`}>
+                            <div className={`inline-block bg-neo-purple outline outline-white outline-2 rounded-t-lg ${message.senderId === userId ? 'rounded-bl-lg' : 'rounded-br-lg'} px-4 py-2`}>
+                                <p className="text-white">{message.content}</p>
+                            </div>
+                            <div className="mt-1">
+                                <small 
+                                    className="text-white text-xs" 
+                                    style={usernameStyle} 
+                                    onMouseEnter={() => setHoveredUsername(typeof message.senderId === 'string' ? message.senderId : null)}
+                                    onMouseLeave={() => setHoveredUsername(null)}
+                                >
+                                    {message.senderId === userId ? 'you' : message.username}
+                                </small>
+                            </div>
+                        </div>
+                    ))}
+                    <div ref={messagesEndRef} />
                 </div>
                 <div className="border-t border-gray-300 p-4 flex">
                 <input
