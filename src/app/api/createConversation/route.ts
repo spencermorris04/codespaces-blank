@@ -1,5 +1,5 @@
 import { db } from '~/util/firebase';
-import { collection, addDoc } from 'firebase/firestore';
+import { ref, push, set } from 'firebase/database';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
@@ -9,12 +9,13 @@ export async function POST(request: Request) {
     const allParticipantIds = new Set([...participantIds, currentUserId]);
     const conversationId = uuidv4();
 
-    const conversationsRef = collection(db, 'conversations');
-    await addDoc(conversationsRef, {
+    // Use the Realtime Database functions
+    const conversationsRef = ref(db, 'conversations');
+    await push(conversationsRef, {
       conversationId,
       participants: Array.from(allParticipantIds),
       conversationName,
-      createdAt: new Date()
+      createdAt: new Date().toISOString() // Use ISO string for Firebase timestamp
     });
 
     return new Response(JSON.stringify({ conversationId }), { status: 201 });

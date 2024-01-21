@@ -23,6 +23,7 @@
     "@mui/material": "^5.15.1",
     "@planetscale/database": "^1.13.0",
     "@reduxjs/toolkit": "^2.0.1",
+    "@vercel/node": "^3.0.17",
     "animejs": "^3.2.2",
     "classnames": "^2.4.0",
     "date-fns": "^3.0.6",
@@ -46,7 +47,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/caseless": "^0.12.5",
+    "@types/node": "^20.11.5",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/react-scroll-to-bottom": "^4.2.4",

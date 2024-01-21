@@ -12,8 +12,10 @@ if (!admin.apps.length) {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: privateKey.replace(/\\n/g, '\n'),
     }),
-    databaseURL: `https://${process.env.FIREBASE_PROJECT_ID}.firebaseio.com`,
+    databaseURL: "https://musephoria-default-rtdb.firebaseio.com/",  // Your Realtime Database URL
   });
 }
 
-export default admin;
+const db = admin.firestore(); // Initialize Firestore
+
+export { db, admin }; // Export Firestore instance

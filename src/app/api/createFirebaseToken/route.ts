@@ -1,4 +1,4 @@
-import admin from '~/util/firebaseAdmin';
+import { admin } from '~/util/firebaseAdmin';
 
 // Export a named function for the POST method
 export async function POST(request: Request) {
