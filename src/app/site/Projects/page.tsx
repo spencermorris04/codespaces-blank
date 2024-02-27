@@ -42,19 +42,22 @@ const ProjectsPage = () => {
   const listRef = useRef<HTMLDivElement>(null);
   const [showScrollArrow, setShowScrollArrow] = useState(false);
   const isMobile = isMobileDevice(); // Detect if the device is mobile
+  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
 
-  const userId = async function GetUser() {
-    const supabase = createClient()
-  
-    const { data, error } = await supabase.auth.getUser()
-    if (error || !data?.user) {
-      redirect('/login')
+  useEffect(() => {
+    // Define the async function inside the useEffect
+    async function fetchUserId() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        redirect('/login');
+      } else {
+        setUserId(data.user.id); // Set userId state
+      }
     }
 
-    const userId = data.user.id
-  
-    return userId
-  }
+    fetchUserId(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
 
   useEffect(() => {

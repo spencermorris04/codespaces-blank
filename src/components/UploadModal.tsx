@@ -1,32 +1,37 @@
-import React, { useState, useCallback } from 'react';
+"use client";
+import React, { useState, useEffect } from 'react'; // Import useEffect
 import { createClient } from '~/util/supabase/client'
 import Modal from '@mui/material/Modal';
 import { v4 as uuidv4 } from 'uuid';
-import UploadFormComponent from './UploadForm'; // Import UploadFormComponent
+import UploadFormComponent from './UploadForm';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '@mui/icons-material/Close';
 import { redirect } from 'next/navigation'
 
 interface UploadModalComponentProps {
-  onClose: () => void;  // Define the type for the onClose prop
+  onClose: () => void;
 }
 
 const UploadModalComponent: React.FC<UploadModalComponentProps> = ({ onClose }) => {
   const [fileUUID, setFileUUID] = useState<string>('');
+  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
   const [open, setOpen] = useState<boolean>(true);
-  const userId = async function GetUser() {
-    const supabase = createClient()
-  
-    const { data, error } = await supabase.auth.getUser()
-    if (error || !data?.user) {
-      redirect('/login')
+
+  useEffect(() => {
+    // Define the async function inside the useEffect
+    async function fetchUserId() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+        redirect('/login');
+      } else {
+        setUserId(data.user.id); // Set userId state
+      }
     }
 
-    const userId = data.user.id
-  
-    return userId
-  }
+    fetchUserId(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
   const handleClose = () => {
     onClose(); // Use the passed onClose function to sync state
