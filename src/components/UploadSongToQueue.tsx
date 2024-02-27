@@ -8,7 +8,7 @@ import { fetchUserPoints, removePoints } from '../app/store/slices/pointsSlice';
 import { RootState, AppDispatch } from '../app/store/store';
 
 interface UploadSongToQueueProps {
-  song: {
+  song?: { // Making it optional if you want to allow calling the component without a song
     songTitle: string;
     r2Id: string;
     uploaderUserId: string;
@@ -18,9 +18,10 @@ interface UploadSongToQueueProps {
     description: string;
     lyrics: string;
   };
+  onSuccess?: () => void; // Adding onSuccess callback
 }
 
-const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song }) => {
+const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song, onSuccess }) => {
   const { userId, getToken } = useAuth();
   const dispatch = useDispatch<AppDispatch>(); // Use the AppDispatch type here
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
@@ -58,6 +59,9 @@ const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song }) => {
       if (addToQueueResponse.ok) {
         dispatch(removePoints({ userId, points: costOfAddingToQueue }));
         toast.success('Song added to queue successfully');
+        if (onSuccess) {
+          onSuccess(); // Call onSuccess callback after successful upload
+        }
       } else {
         const errorText = await addToQueueResponse.text();
         throw new Error(`Failed to add song to queue: ${errorText}`);

@@ -1,80 +1,93 @@
 import {
-  int,
-  timestamp,
-  mysqlTable,
-  varchar,
   serial,
-  text
-} from 'drizzle-orm/mysql-core';
+  text,
+  varchar,
+  integer,
+  timestamp,
+  jsonb,
+  pgTable,
+  boolean
+} from 'drizzle-orm/pg-core';
 
 // UserDetails table
-export const userDetails = mysqlTable('user_details', {
+export const userDetails = pgTable('user_details', {
   id: serial("id").primaryKey(),
   userId: varchar('userId', { length: 255 }).notNull(),
   username: varchar('username', { length: 255 }),
   bio: text('bio'),
-  proficiencyLevel: varchar('proficiencyLevel', { length: 255 }), // Store as varchar
+  proficiencyLevel: varchar('proficiencyLevel', { length: 255 }),
   instruments: text('instruments'),
-  totalPoints: int('totalPoints').default(0), // Default to 0
+  totalPoints: integer('totalPoints').default(0),
   favoriteBands: text('favoriteBands'),
-  favoriteGenres: text('favoriteGenres')
+  favoriteGenres: text('favoriteGenres'),
+  follow: jsonb('follow')
 });
 
-// Updated Songs table
-export const songs = mysqlTable('songs', {
-  id: serial("id").primaryKey(),
-  songTitle: text('song title'),
-  r2Id: varchar('r2Id', { length: 255 }),
-  uploaderUserId: varchar('uploaderUserId', { length: 255 }), // No foreign key reference
-  genre: varchar('genre', { length: 255 }),
-  instruments: varchar('instruments', { length: 255 }),
-  contribution: varchar('contribution', { length: 255 }),
-  description: text('description'),
-  lyrics: text('lyrics')
-});
-
-// Updated Song feedback table
-export const songFeedback = mysqlTable('songFeedback', {
-  id: serial("id").primaryKey(),
-  reviewerUserId: varchar('reviewerUserId', { length: 255 }), // No foreign key reference
-  uploaderUserId: varchar('uploaderUserId', { length: 255 }), // No foreign key reference
-  r2Id: varchar('r2Id', { length: 255 }), // No foreign key reference
-  productionFeedback: text('productionFeedback'),
-  instrumentationFeedback: text('instrumentationFeedback'),
-  songwritingFeedback: text('songwritingFeedback'),
-  vocalsFeedback: text('vocalsFeedback'),
-  otherFeedback: text('otherFeedback'),
-  timestamp: timestamp('timestamp', { mode: 'date' }) // Add this line
-});
-
-// PointsTransactions table
-export const pointsTransactions = mysqlTable('points', {
-  id: serial("id").primaryKey(),
-  userId: varchar('userId', { length: 255 }).notNull(),
-  points: int('points').notNull(),
-  transactionType: varchar('transactionType', { length: 255 }).notNull(), // e.g., AddSongToQueue, PeerReviewRedemption, ExpertReviewRedemption
-  timestamp: timestamp('timestamp', { mode: 'date' }) // Use 'date' mode for datetime functionality
-});
-
-// New Queue table
-export const queue = mysqlTable('queue', {
+// Songs table with questions dictionary
+export const songs = pgTable('songs', {
   id: serial("id").primaryKey(),
   songTitle: text('songTitle'),
   r2Id: varchar('r2Id', { length: 255 }),
-  uploaderUserId: varchar('uploaderUserId', { length: 255 }), 
+  uploaderUserId: varchar('uploaderUserId', { length: 255 }),
   genre: varchar('genre', { length: 255 }),
   instruments: varchar('instruments', { length: 255 }),
   contribution: varchar('contribution', { length: 255 }),
   description: text('description'),
   lyrics: text('lyrics'),
-  timestamp: timestamp('timestamp', { mode: 'date' }) // Set mode to 'date'
+  questions: jsonb('questions') // JSONB for flexible questions structure
 });
 
-// Corrected default export
+// SongFeedback table
+export const songFeedback = pgTable('songFeedback', {
+  id: serial("id").primaryKey(),
+  reviewerUserId: varchar('reviewerUserId', { length: 255 }),
+  uploaderUserId: varchar('uploaderUserId', { length: 255 }),
+  r2Id: varchar('r2Id', { length: 255 }),
+  productionFeedback: text('productionFeedback'),
+  instrumentationFeedback: text('instrumentationFeedback'),
+  songwritingFeedback: text('songwritingFeedback'),
+  vocalsFeedback: text('vocalsFeedback'),
+  otherFeedback: text('otherFeedback'),
+  timestamp: timestamp('timestamp')
+});
+
+// PointsTransactions table
+export const pointsTransactions = pgTable('points', {
+  id: serial("id").primaryKey(),
+  userId: varchar('userId', { length: 255 }).notNull(),
+  points: integer('points').notNull(),
+  transactionType: varchar('transactionType', { length: 255 }).notNull(),
+  timestamp: timestamp('timestamp')
+});
+
+// Queue table with newUser flag
+export const queue = pgTable('queue', {
+  id: serial("id").primaryKey(),
+  songTitle: text('songTitle'),
+  r2Id: varchar('r2Id', { length: 255 }),
+  uploaderUserId: varchar('uploaderUserId', { length: 255 }),
+  genre: varchar('genre', { length: 255 }),
+  instruments: varchar('instruments', { length: 255 }),
+  contribution: varchar('contribution', { length: 255 }),
+  description: text('description'),
+  lyrics: text('lyrics'),
+  timestamp: timestamp('timestamp'),
+  newUser: boolean('newUser').default(false)
+});
+
+// Friending functionality with a separate table
+export const friendships = pgTable('friendships', {
+  id: serial("id").primaryKey(),
+  userId: varchar('userId', { length: 255 }).notNull(), // User who initiated the friend request
+  friendId: varchar('friendId', { length: 255 }).notNull(), // The user being friended
+  status: varchar('status', { length: 255 }).notNull() // Requested, Denied, Accepted
+});
+
 export default {
   userDetails,
   songs,
   songFeedback,
   pointsTransactions,
-  queue
+  queue,
+  friendships
 };

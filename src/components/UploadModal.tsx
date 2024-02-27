@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from 'react';
-import { useAuth } from "@clerk/nextjs";
+import { createClient } from '~/util/supabase/client'
 import Modal from '@mui/material/Modal';
 import { v4 as uuidv4 } from 'uuid';
 import UploadFormComponent from './UploadForm'; // Import UploadFormComponent
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CloseIcon from '@mui/icons-material/Close';
+import { redirect } from 'next/navigation'
 
 interface UploadModalComponentProps {
   onClose: () => void;  // Define the type for the onClose prop
@@ -14,7 +15,18 @@ interface UploadModalComponentProps {
 const UploadModalComponent: React.FC<UploadModalComponentProps> = ({ onClose }) => {
   const [fileUUID, setFileUUID] = useState<string>('');
   const [open, setOpen] = useState<boolean>(true);
-  const { userId, getToken } = useAuth();
+  const userId = async function GetUser() {
+    const supabase = createClient()
+  
+    const { data, error } = await supabase.auth.getUser()
+    if (error || !data?.user) {
+      redirect('/login')
+    }
+
+    const userId = data.user.id
+  
+    return userId
+  }
 
   const handleClose = () => {
     onClose(); // Use the passed onClose function to sync state
@@ -28,7 +40,6 @@ const UploadModalComponent: React.FC<UploadModalComponentProps> = ({ onClose }) 
         return;
       }
 
-      const token = await getToken();
       const generatedFileUUID = uuidv4();
       setFileUUID(generatedFileUUID);
 
@@ -37,7 +48,6 @@ const UploadModalComponent: React.FC<UploadModalComponentProps> = ({ onClose }) 
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify({ fileName: file.name, fileType: file.type, fileUUID: generatedFileUUID }),
         });

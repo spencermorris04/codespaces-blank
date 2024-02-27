@@ -1,10 +1,4 @@
-import { currentUser } from "@clerk/nextjs";
-
 export default async function HomePage() {
-  const user = await currentUser();
-  
-  if (!user) return <div>Not logged in</div>;
-
   const feedbackTimeline = [
     {
       id: 1,
@@ -38,11 +32,6 @@ export default async function HomePage() {
       name: 'Jordan',
       points: 300,
       avatarUrl: 'https://cdn5.vectorstock.com/i/1000x1000/01/69/businesswoman-character-avatar-icon-vector-12800169.jpg',
-    },
-    {
-      name: user?.firstName, // Replace with session user's name
-      points: 250,
-      avatarUrl: user?.imageUrl,
     },
     {
       name: 'Casey',

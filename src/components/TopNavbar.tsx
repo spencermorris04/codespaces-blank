@@ -12,7 +12,6 @@ import UploadComponent from './UploadButton';
 import TextField from '@mui/material/TextField';
 import UploadModalComponent from './UploadModal';
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@clerk/nextjs";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserPoints } from '../app/store/slices/pointsSlice'; // Adjust the path as needed
 import { RootState, AppDispatch } from '../app/store/store';
@@ -72,10 +71,10 @@ const TopNavbar = () => {
   const [open, setOpen] = useState(false);
   const [pointsDisplay, setPointsDisplay] = useState<number | string>('');
   const [lastPoints, setLastPoints] = useState<number>(0);
-  const { user } = useUser();
   const dispatch = useDispatch<AppDispatch>(); // Correctly type the dispatch
 
   // Get the total points from Redux store
+  /*
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
 
   useEffect(() => {
@@ -96,6 +95,7 @@ const TopNavbar = () => {
     number: totalPoints, 
     from: { number: lastPoints }
   });
+  */
 
   // Handle open/close for modal
   const handleOpen = () => setOpen(true);
@@ -216,12 +216,14 @@ const TopNavbar = () => {
         {/* Right-aligned items */}
         <div className="flex items-center">
           <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
+            {/*
             <Typography variant="body1" color="inherit" component="div">
               Points: 
               <animated.span className="font-semibold text-black">
                 {springProps.number.to(n => n.toFixed(0))}
               </animated.span>
             </Typography>
+            */}
           </div>
 
           <div className="bg-white rounded-md outline outline-3 mr-4">

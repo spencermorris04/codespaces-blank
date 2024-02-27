@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from "@clerk/nextjs";
 import { toast } from 'react-toastify';
 
 interface FormData {
@@ -31,8 +30,6 @@ const UploadFormComponent: React.FC<UploadFormProps> = ({ fileUUID, userId, onCl
     lyrics: '',
   });
 
-  const { getToken } = useAuth();
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (e.target instanceof HTMLSelectElement && e.target.multiple) {
@@ -45,7 +42,6 @@ const UploadFormComponent: React.FC<UploadFormProps> = ({ fileUUID, userId, onCl
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const token = await getToken();
 
     const submissionData = {
       ...formData,
@@ -59,7 +55,6 @@ const UploadFormComponent: React.FC<UploadFormProps> = ({ fileUUID, userId, onCl
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(submissionData),
       });
