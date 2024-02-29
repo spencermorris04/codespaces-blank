@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { ClerkProvider } from '@clerk/nextjs'
 import { Public_Sans } from 'next/font/google'
 import './globals.css'
 import Sidebar from '~/components/Sidebar';

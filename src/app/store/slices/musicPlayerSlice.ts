@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface MusicPlayerState {
   currentTime: number;
   maxWatchedTime: number;
+  duration: number;
 }
 
 const initialState: MusicPlayerState = {
   currentTime: 0,
   maxWatchedTime: 0,
+  duration: 0,
 };
 
 export const musicPlayerSlice = createSlice({
@@ -20,13 +22,15 @@ export const musicPlayerSlice = createSlice({
         state.maxWatchedTime = action.payload;
       }
     },
+    setDuration: (state, action: PayloadAction<number>) => {
+      state.duration = action.payload;
+    },
     resetPlayer: (state) => {
       state.currentTime = 0;
       state.maxWatchedTime = 0;
+      state.duration = 0;
     },
   },
 });
 
-export const { setCurrentTime, resetPlayer } = musicPlayerSlice.actions;
-
-export default musicPlayerSlice.reducer;
+export const { setCurrentTime, setDuration, resetPlayer } = musicPlayerSlice.actions;

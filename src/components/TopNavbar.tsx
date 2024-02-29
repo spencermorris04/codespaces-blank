@@ -16,13 +16,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserPoints } from '../app/store/slices/pointsSlice'; // Adjust the path as needed
 import { RootState, AppDispatch } from '../app/store/store';
 import { useSpring, animated } from 'react-spring';
-
-
+import PlaybackProgressDonut from './PlaybackProgressDonut';
+import { createClient } from '~/util/supabase/client'; 
 
 function classNames(...classes: Array<string | false | undefined | null>): string {
   return classes.filter(Boolean).join(' ');
 }
-
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -68,13 +67,26 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const TopNavbar = () => {
+  const [user, setUser] = useState(null); // State to hold the user object
+  const dispatch = useDispatch<AppDispatch>();
   const [open, setOpen] = useState(false);
   const [pointsDisplay, setPointsDisplay] = useState<number | string>('');
   const [lastPoints, setLastPoints] = useState<number>(0);
-  const dispatch = useDispatch<AppDispatch>(); // Correctly type the dispatch
+
+  // Fetch the user from Supabase
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        setUser(data.user);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   // Get the total points from Redux store
-  /*
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
 
   useEffect(() => {
@@ -95,7 +107,6 @@ const TopNavbar = () => {
     number: totalPoints, 
     from: { number: lastPoints }
   });
-  */
 
   // Handle open/close for modal
   const handleOpen = () => setOpen(true);
@@ -215,15 +226,16 @@ const TopNavbar = () => {
 
         {/* Right-aligned items */}
         <div className="flex items-center">
+        <PlaybackProgressDonut />
           <div className="bg-white px-2 py-2 rounded-md outline outline-3 mr-4">
-            {/*
+            
             <Typography variant="body1" color="inherit" component="div">
               Points: 
               <animated.span className="font-semibold text-black">
                 {springProps.number.to(n => n.toFixed(0))}
               </animated.span>
             </Typography>
-            */}
+            
           </div>
 
           <div className="bg-white rounded-md outline outline-3 mr-4">

@@ -1,0 +1,34 @@
+.music-player .controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1px;
+  }
+  
+  .music-player .volume-btn + .volume-slider {
+    transition: all 0.3s ease;
+  }
+  
+  .music-player .timeline .base-line {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    background-color: lightgrey;
+  }
+  
+  .music-player .timeline .current-time-line {
+    height: 5px;
+    background-color: red;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+  }
+  
+  .music-player .timeline .max-watched-time-line {
+    height: 5px;
+    background-color: white;
+    position: absolute;
+    top: 0;
+    z-index: 0;
+  }
+  

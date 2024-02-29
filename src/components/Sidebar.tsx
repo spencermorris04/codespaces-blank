@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { SvgIconComponent } from '@mui/icons-material';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // Import useRouter
 import Image from 'next/image';
 import {
   HomeOutlined,
@@ -14,6 +14,7 @@ import {
   LyricsOutlined,
 } from '@mui/icons-material';
 import { createClient } from '~/util/supabase/client';
+import { SignOut } from '@supabase/supabase-js';
 
 const ACTIVE_ROUTE = 'flex items-center gap-3 py-2 px-4 mb-3 text-white bg-black rounded-md';
 const INACTIVE_ROUTE = 'flex items-center gap-3 py-2 px-4 mb-3 text-black outline outline-3 bg-white hover:text-white hover:bg-black rounded-md';
@@ -33,6 +34,7 @@ interface SidebarLinkProps {
 export default function Sidebar() {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter(); // Use useRouter to handle redirects
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -45,6 +47,20 @@ export default function Sidebar() {
 
     fetchUserData();
   }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient(); // Ensure you're using the Supabase client
+    
+    const { error } = await supabase.auth.signOut(); // Use Supabase's signOut method directly
+    
+    if (!error) {
+      // If no error, redirect to the login page
+      router.push('/login');
+    } else {
+      // Optionally handle the error, e.g., display a message
+      console.error('Sign out error:', error.message);
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-neo-purple p-4 text-white border-r-3 border-black">
@@ -68,8 +84,14 @@ export default function Sidebar() {
         <SidebarLink href="/site/Settings" Icon={SettingsOutlined} text="Settings" active={pathname === '/Settings'} />
       </ul>
 
-      <div className="flex self-center py-2">
-        {user?.email}
+      <div className="flex flex-col items-center mt-6">
+        <div className="mb-2">{user?.email}</div>
+        <button
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          onClick={handleSignOut}
+        >
+          Sign Out
+        </button>
       </div>
     </div>
   );

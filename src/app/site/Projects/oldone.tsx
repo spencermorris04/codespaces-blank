@@ -1,11 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@clerk/nextjs';
+import { createClient } from '~/util/supabase/client'
 import MusicPlayer from '../../../components/MusicPlayer';
 import SongCard from '../../../components/SongCard';
 import UploadSongToQueue from '../../../components/UploadSongToQueue';
 import MobileMusicPlayer from '../../../components/MobileMusicPlayer';
 import QuestionEditingModal from '~/components/QuestionEditingModal';
+import { usePathname, useRouter } from 'next/navigation';
 
 interface Song {
   id: number;
@@ -38,10 +39,26 @@ const ProjectsPage = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
-  const { userId, getToken } = useAuth();
   const listRef = useRef<HTMLDivElement>(null);
   const [showScrollArrow, setShowScrollArrow] = useState(false);
   const isMobile = isMobileDevice(); // Detect if the device is mobile
+  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
+  const router = useRouter(); // Use useRouter to handle redirects
+
+
+  useEffect(() => {
+    // Define the async function inside the useEffect
+    async function fetchUserId() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+      } else {
+        setUserId(data.user.id); // Set userId state
+      }
+    }
+
+    fetchUserId(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
 
   useEffect(() => {
@@ -50,12 +67,10 @@ const ProjectsPage = () => {
       let userSongs: Song[] = []; // Declare userSongs here
 
       try {
-        const token = await getToken();
         const response = await fetch('/api/getUserSongs', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ userId })
         });
@@ -74,12 +89,10 @@ const ProjectsPage = () => {
       
       // Fetch presigned URLs for songs
       const r2Ids = userSongs.map(song => song.r2Id);
-      const token = await getToken();
       const urlResponse = await fetch('/api/getR2SongUrls', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ objectKeys: r2Ids }),
       });
@@ -114,7 +127,7 @@ const ProjectsPage = () => {
     return () => {
       window.removeEventListener('resize', checkForOverflow);
     };
-}, [userId, getToken]);
+}, [userId]);
 
   // State to manage modal visibility
   const [isEditing, setIsEditing] = useState(false);
@@ -161,7 +174,7 @@ const ProjectsPage = () => {
             <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
               {songs.map((song) => (
                 <div key={song.id} className="flex flex-col h-full">
-                  <SongCard song={song} onClick={() => handleCardClick(song)} />
+                  <SongCard song={song} onEdit={() => handleEditClick()} onClick={() => handleCardClick(song)} />
                 </div>
               ))}
             </div>

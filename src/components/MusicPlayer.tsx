@@ -1,48 +1,77 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentTime } from '~/app/store/slices/musicPlayerSlice';
+import { setCurrentTime, setDuration as setDurationAction } from '~/app/store/slices/musicPlayerSlice';
 import { selectMaxWatchedTime } from '~/app/store/selectors/musicPlayerSelectors';
+import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeUp } from 'react-icons/fa';
+import '~/app/styles/MusicPlayer.css'; // Assuming you have a CSS file for additional styles
 
 interface MusicPlayerProps {
   songUrl: string;
-  onEnded?: () => void; // Optional callback when the song ends
+  onEnded?: () => void;
 }
 
 const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useDispatch();
-  // Use useSelector to get the maxWatchedTime from the Redux store
   const maxWatchedTime = useSelector(selectMaxWatchedTime);
-  // Local state to control the display of custom controls
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTimeLocal] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.5);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) {
       audio.src = songUrl;
+      audio.volume = volume;
 
-      // Event listener for time updates to dispatch the current time to Redux
-      const handleTimeUpdate = () => {
-        dispatch(setCurrentTime(audio.currentTime));
+      const autoplay = async () => {
+        if (!isMobileDevice() && audio) {
+          try {
+            await audio.play();
+            setIsPlaying(true);
+          } catch (error) {
+            console.log("Autoplay was prevented.");
+          }
+        }
       };
+
+      autoplay();
+
+      const handleTimeUpdate = () => {
+        setCurrentTimeLocal(audio.currentTime);
+        // Update maxWatchedTime only if currentTime exceeds it
+        if (audio.currentTime > maxWatchedTime) {
+          dispatch(setCurrentTime(audio.currentTime));
+        }
+      };
+
+      const handleLoadedMetadata = () => {
+        if (audioRef.current) {
+          const { duration } = audioRef.current;
+          if (duration > 0) {
+            setDuration(duration); // Update local state using the local state setter function
+            dispatch(setDurationAction(duration)); // Dispatch to Redux store using the renamed action creator
+          }
+        }
+      };
+      
 
       audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('ended', () => {
         onEnded?.();
-        setIsPlaying(false); // Reset play state when the song ends
+        setIsPlaying(false);
       });
 
-      // Cleanup event listeners on component unmount
       return () => {
         audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('ended', () => {
-          onEnded?.();
-        });
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       };
     }
-  }, [songUrl, onEnded, dispatch]);
+  }, [songUrl, onEnded, dispatch, volume]);
 
-  // Function to handle play/pause toggle
   const togglePlay = () => {
     const audio = audioRef.current;
     if (audio) {
@@ -55,7 +84,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
     }
   };
 
-  // Function to seek 5 seconds back
   const seekBack = () => {
     const audio = audioRef.current;
     if (audio) {
@@ -63,26 +91,54 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
     }
   };
 
-  // Function to seek forward, respecting the maxWatchedTime
   const seekForward = () => {
     const audio = audioRef.current;
-    if (audio && audio.currentTime < maxWatchedTime) {
-      // Seek forward only up to the maxWatchedTime
-      audio.currentTime = Math.min(audio.currentTime + 5, maxWatchedTime);
+    if (audio) {
+      // Limit seeking forward to the maximum watched time
+      const seekTo = Math.min(audio.currentTime + 5, maxWatchedTime);
+      audio.currentTime = seekTo < duration ? seekTo : audio.currentTime;
     }
   };
 
-  // Conditionally render the seek forward button
-  const showSeekForward = audioRef.current?.currentTime < maxWatchedTime;
+  const toggleVolumeSlider = () => setShowVolumeSlider(!showVolumeSlider);
+
+  const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
   return (
-    <div>
-      <audio ref={audioRef} style={{ display: 'none' }} /> {/* Hide the default controls */}
-      <button onClick={togglePlay}>{isPlaying ? 'Pause' : 'Play'}</button>
-      <button onClick={seekBack}>Seek Back 5s</button>
-      {showSeekForward && <button onClick={seekForward}>Seek Forward 5s</button>}
+    <div className="music-player" style={{ minWidth: '200px' }}>
+      <audio ref={audioRef} />
+      <div className="controls">
+        <button onClick={seekBack}><FaBackward /></button>
+        <button onClick={togglePlay}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
+        <button onClick={seekForward}><FaForward /></button>
+        <div className="time-info">{formatTime(currentTime)} / {formatTime(duration)}</div>
+        <button onClick={toggleVolumeSlider} className="volume-btn"><FaVolumeUp /></button>
+        {showVolumeSlider && (
+          <input
+            type="range"
+            className="volume-slider"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+          />
+        )}
+      </div>
+      <div className="timeline">
+        <div className="base-line">
+          <div className="current-time-line" style={{ width: `${(currentTime / duration) * 100}%` }} />
+          <div className="max-watched-time-line" style={{ width: `${(maxWatchedTime / duration) * 100}%` }} />
+        </div>
+      </div>
     </div>
   );
 };
+
+function formatTime(time: number): string {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
 
 export default MusicPlayer;
