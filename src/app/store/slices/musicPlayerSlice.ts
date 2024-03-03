@@ -22,6 +22,9 @@ export const musicPlayerSlice = createSlice({
         state.maxWatchedTime = action.payload;
       }
     },
+    setMaxWatchedTime: (state, action: PayloadAction<number>) => {
+      state.maxWatchedTime = action.payload;
+    },
     setDuration: (state, action: PayloadAction<number>) => {
       state.duration = action.payload;
     },
@@ -33,4 +36,4 @@ export const musicPlayerSlice = createSlice({
   },
 });
 
-export const { setCurrentTime, setDuration, resetPlayer } = musicPlayerSlice.actions;
+export const { setCurrentTime, setMaxWatchedTime, setDuration, resetPlayer } = musicPlayerSlice.actions;

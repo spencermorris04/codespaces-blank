@@ -7,6 +7,7 @@ import SongCardsView from '~/components/SongCardsView'; // Assuming this is a se
 // Import necessary AWS SDK modules
 import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import Link from 'next/link';
 
 // Initialize the S3 client outside of your function to avoid re-initializing it on each call
 const s3Client = new S3Client({
@@ -18,10 +19,17 @@ const s3Client = new S3Client({
   },
 });
 
-// This is a server component
-export default async function ProjectsPage() {
+// main export
+export default async function ProjectsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
   const supabase = createClient();
   const { data, error } = await supabase.auth.getUser();
+
+  // Set default url search param
+  const titleSearch = (searchParams?.title || '') as string;
 
   // Redirect if not authenticated
   if (error || !data?.user) {
@@ -34,8 +42,8 @@ export default async function ProjectsPage() {
   // Assuming `SongCardsView` can be dynamically imported if it's a client component
   return (
     <>
-      <div className="h-[90vh] mx-4">
-        <SongCardsView songs={songs} />
+      <div className="mx-4">
+        <SongCardsView songs={songs} title={titleSearch} />
       </div>
     </>
   );
@@ -52,7 +60,8 @@ async function fetchUserSongs(userId) {
       instruments: songsSchema.instruments,
       contribution: songsSchema.contribution,
       description: songsSchema.description,
-      lyrics: songsSchema.lyrics
+      lyrics: songsSchema.lyrics,
+      questions: songsSchema.questions,
     }).from(songsSchema).where(eq(songsSchema.uploaderUserId, userId));
 
     // Generate pre-signed URLs for each song

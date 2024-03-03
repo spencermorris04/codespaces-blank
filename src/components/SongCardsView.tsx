@@ -5,6 +5,8 @@ import MusicPlayer from '~/components/MusicPlayer';
 import MobileMusicPlayer from '~/components/MobileMusicPlayer';
 import UploadSongToQueue from '~/components/UploadSongToQueue';
 import QuestionEditingModal from '~/components/QuestionEditingModal';
+import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { toast } from 'react-toastify'; // Assuming you're using react-toastify for notifications
 
 const isMobileDevice = () => {
   if (typeof window !== 'undefined') {
@@ -13,11 +15,27 @@ const isMobileDevice = () => {
   return false;
 };
 
-const SongCardsView = ({ songs, loading }) => {
+const SongCardsView = ({ songs, loading, title }) => {
   const [selectedSong, setSelectedSong] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const isMobile = isMobileDevice();
   const listRef = useRef(null); // Define listRef using useRef
+
+  const filteredSongs = songs.filter(song => song.songTitle.toLowerCase().includes(title.toLowerCase()));
+
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+ 
+  function handleSearch(term: string) {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set('title', term);
+    } else {
+      params.delete('title');
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }
 
   const handleCardClick = (song) => {
     setSelectedSong(song);
@@ -25,6 +43,29 @@ const SongCardsView = ({ songs, loading }) => {
 
   const handleEditClick = () => {
     setIsEditing(true);
+  };
+
+  // Function to handle the save action from QuestionEditingModal
+  const handleSave = async (updatedSong) => {
+    try {
+      const response = await fetch('/api/updateSong', { // Ensure this URL matches your API route
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedSong),
+      });
+
+      if (!response.ok) throw new Error('Failed to update song');
+
+      const data = await response.json();
+      toast.success(data.message); // Notify user of success
+      setIsEditing(false); // Close modal on success
+      // Optionally, refresh the song list to reflect the updated details
+    } catch (error) {
+      console.error('Error updating song:', error);
+      toast.error('Error updating song');
+    }
   };
 
   if (loading) {
@@ -47,12 +88,25 @@ const SongCardsView = ({ songs, loading }) => {
 
   return (
     <>
-      <div className="flex h-[90vh] mx-4">
+      <div className="flex h-[85vh] mx-4">
         {/* Left Pane - List of Song Cards */}
-        <div className="relative flex-1 w-3/5">
+        <div className="relative flex-1 w-3/5 mt-2">
           <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
+          <div className="relative flex flex-1 flex-shrink-0">
+            <label htmlFor="search" className="sr-only">
+              Search
+            </label>
+            <input
+              className="peer block w-full rounded-md outline outline-3 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+              placeholder="enter your seach term here"
+              defaultValue={searchParams.get('query')?.toString()}
+              onChange={(e) => {
+                handleSearch(e.target.value);
+              }}
+            />
+          </div>
             <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
-              {songs.map((song) => (
+              {filteredSongs.map((song) => (
                 <div key={song.id} className="flex flex-col h-full">
                   <SongCard song={song} onEdit={() => handleEditClick()} onClick={() => handleCardClick(song)} />
                 </div>
@@ -70,7 +124,7 @@ const SongCardsView = ({ songs, loading }) => {
             {selectedSong ? (
               <>
                 <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
-                <div className="flex-grow overflow-y-auto h-2/3">
+                <div className="flex-grow overflow-y-auto no-scrollbar">
                   <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                     <strong>Genre:</strong> {selectedSong.genre}
                   </div>
@@ -90,14 +144,16 @@ const SongCardsView = ({ songs, loading }) => {
                   </div>
                 </div>
                 <div className="self-center flex mt-4">
-                  <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} />
+                  {/* Pass seekForwardDenial prop with value true */}
+                  <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} seekForwardDenial={false} />
                 </div>
 
-                {/* UploadSongToQueue button */}
-                <div className="mt-6 self-center">
+                {/* UploadSongToQueue button and Edit Button */}
+                <div className="mt-6 self-center flex">
                   <UploadSongToQueue song={selectedSong} />
-                  <button className="ml-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={handleEditClick}>Edit</button>
+                  <button className="ml-4 bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4" onClick={handleEditClick}>Edit</button>
                 </div>
+
 
               </>
             ) : (
@@ -130,8 +186,14 @@ const SongCardsView = ({ songs, loading }) => {
           )}
         </div>
       )}
-      {isEditing && selectedSong && <QuestionEditingModal song={selectedSong} onClose={() => setIsEditing(false)} />}
-    </>
+      {isEditing && selectedSong && (
+        <QuestionEditingModal
+          song={selectedSong}
+          onClose={() => setIsEditing(false)}
+          onSave={handleSave}
+        />
+      )}
+      </>
   );
 };
 

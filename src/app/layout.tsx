@@ -15,6 +15,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  
   return (
       <html lang="en">
         <body className={`${publicsans.className} flex relative h-screen`}>

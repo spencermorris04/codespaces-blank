@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useUser, useAuth } from '@clerk/nextjs';
 import classNames from 'classnames'; // A utility to conditionally join classNames
+import { createClient } from '~/util/supabase/client'
 
 
 const SettingsPage = () => {
@@ -14,23 +14,35 @@ const SettingsPage = () => {
     favoriteGenres: '',
   });
   const [loading, setLoading] = useState(true);
-  const { user } = useUser();
-  const { getToken } = useAuth();
+  const supabase = createClient();
+  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
+
+  useEffect(() => {
+    // Define the async function inside the useEffect
+    async function fetchUserId() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+      } else {
+        setUserId(data.user.id); // Set userId state
+      }
+    }
+
+    fetchUserId(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
   useEffect(() => {
     const fetchUserDetails = async () => {
-      if (!user) return;
+      if (!userId) return;
       setLoading(true);
 
       try {
-        const token = await getToken();
         const response = await fetch(`/api/getUserDetails`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ userId: user.id })
+          body: JSON.stringify({ userId: userId })
         });
 
         if (!response.ok) {
@@ -49,22 +61,20 @@ const SettingsPage = () => {
     };
 
     fetchUserDetails();
-  }, [user, getToken]);
+  }, [userId]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!user) return; // Guard clause to check for user existence
+    if (!userId) return; // Guard clause to check for user existence
     setLoading(true);
 
     try {
-      const token = await getToken();
       await fetch('/api/updateUserDetails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ ...userDetails, userId: user.id })
+        body: JSON.stringify({ ...userDetails, userId: userId })
       });
 
       alert('Details updated successfully!');

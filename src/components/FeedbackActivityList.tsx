@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '@clerk/nextjs';
 import { formatDistanceToNowStrict } from 'date-fns';
 import { FeedbackActivity } from '../util/types/types';
 import Link from 'next/link';
@@ -11,16 +10,13 @@ interface FeedbackActivityListProps {
 
 const FeedbackActivityList: React.FC<FeedbackActivityListProps> = ({ userId }) => {
   const [activities, setActivities] = useState<FeedbackActivity[]>([]);
-  const { getToken } = useAuth();
 
   useEffect(() => {
     const fetchActivities = async () => {
-      const token = await getToken();
       const response = await fetch('/api/getFeedbackActivity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ userId }),
       });
@@ -32,7 +28,7 @@ const FeedbackActivityList: React.FC<FeedbackActivityListProps> = ({ userId }) =
     };
 
     fetchActivities();
-  }, [userId, getToken]);
+  }, [userId]);
 
   return (
     <div className="bg-neo-light-pink p-6 rounded-lg">

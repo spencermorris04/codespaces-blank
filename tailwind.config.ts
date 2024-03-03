@@ -1,4 +1,3 @@
-import { lightBlue, red } from '@mui/material/colors'
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
@@ -46,6 +45,10 @@ const config: Config = {
         'neo-light-pink': '#FFF5EE',
         'neo-light-purple': '#E3DFF2',
         'neo-light-cream': '#FFFDD0',
+      },
+      scrollbar: {
+        // Define your custom scrollbar styles here
+        default: 'none', // Hide scrollbar for all elements by default
       },
     },
   },

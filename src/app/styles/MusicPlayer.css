@@ -3,6 +3,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1px;
+    color: white;
   }
   
   .music-player .volume-btn + .volume-slider {
@@ -13,7 +14,7 @@
     position: relative;
     width: 100%;
     height: 5px;
-    background-color: lightgrey;
+    background-color: white;
   }
   
   .music-player .timeline .current-time-line {
@@ -22,11 +23,11 @@
     position: absolute;
     top: 0;
     z-index: 1;
-  }
+  }  
   
   .music-player .timeline .max-watched-time-line {
     height: 5px;
-    background-color: white;
+    background-color: hotpink;
     position: absolute;
     top: 0;
     z-index: 0;

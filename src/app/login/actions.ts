@@ -19,7 +19,7 @@ export async function login(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/site')
 }
 
 export async function signup(formData: FormData) {
@@ -37,7 +37,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/site')
 }
 
 export async function signOut() {
@@ -51,6 +51,6 @@ export async function signOut() {
   } else {
     // Optionally, revalidate or redirect the user after sign out
     revalidatePath('/', 'layout')
-    redirect('/')
+    redirect('/site')
   }
 }

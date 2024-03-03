@@ -27,12 +27,6 @@ const SongCard: React.FC<SongCardProps> = ({ song, onClick, onEdit }) => {
         <p>Genre: {song.genre}</p>
         <p>Instruments: {song.instruments}</p>
         <p>Contribution: {song.contribution}</p>
-        {/* You can place the edit button somewhere here and bind it with onEdit */}
-        {/* Example: */}
-        <button className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={(e) => {
-          e.stopPropagation(); // Prevent onClick from being triggered when the edit button is clicked
-          onEdit();
-        }}>Edit</button>
       </div>
     </div>
   );

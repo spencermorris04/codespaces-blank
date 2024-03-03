@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { useUser, useAuth } from '@clerk/nextjs';
 import FeedbackActivityList from '../../../components/FeedbackActivityList';
 import FeedbackSongCard from '../../../components/FeedbackSongCard';
+import { createClient } from '~/util/supabase/client'
 
 interface SongFeedback {
     id: number;
@@ -38,33 +38,43 @@ interface SongFeedback {
   
 
   const FeedbackPage: React.FC = () => {
-    const { user } = useUser();
-    const { getToken } = useAuth();
     const [songFeedbacks, setSongFeedbacks] = useState<SongFeedback[]>([]);
     const [activities, setActivities] = useState<FeedbackActivity[]>([]);
+    const supabase = createClient();
+    const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
+
+    useEffect(() => {
+      // Define the async function inside the useEffect
+      async function fetchUserId() {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.getUser();
+        if (error || !data?.user) {
+        } else {
+          setUserId(data.user.id); // Set userId state
+        }
+      }
   
+      fetchUserId(); // Call the function
+    }, []); // Empty dependency array to run once on mount
+
     useEffect(() => {
       const fetchFeedbackData = async () => {
-        if (user) {
-          const token = await getToken();
-          if (token) {
-            await fetchFeedbackActivities(token);
-            await fetchSongFeedbacks(token);
-          }
+        if (userId) {
+          await fetchFeedbackActivities();
+          await fetchSongFeedbacks();
         }
       };
   
       fetchFeedbackData();
-    }, [user, getToken]);
+    }, [userId]);
   
-    const fetchFeedbackActivities = async (token: string) => {
+    const fetchFeedbackActivities = async () => {
       const response = await fetch('/api/getFeedbackActivity', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId: user?.id }),
+        body: JSON.stringify({ userId: userId}),
       });
       if (response.ok) {
         const data = await response.json();
@@ -72,14 +82,13 @@ interface SongFeedback {
       }
     };
   
-    const fetchSongFeedbacks = async (token: string) => {
+    const fetchSongFeedbacks = async () => {
       const response = await fetch('/api/getFeedbackSongs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId: user?.id }), // Send userId in the request body
+        body: JSON.stringify({ userId: userId }), // Send userId in the request body
       });
       if (response.ok) {
         const data = await response.json();
@@ -93,7 +102,7 @@ interface SongFeedback {
     return (
       <div className="flex flex-row mx-8 mt-8 h-[85vh]">
         <div className="flex-1 w-1/2 px-4 py-4 overflow-y-scroll no-scrollbar outline outline-4 bg-neo-light-pink rounded-lg mr-6">
-          <FeedbackActivityList userId={user?.id || ''} />
+          <FeedbackActivityList userId={userId || ''} />
         </div>
         <div className="bg-neo-light-pink outline outline-4 py-4 px-4 rounded-lg overflow-y-scroll no-scrollbar">
           <div className="grid h-fit grid-cols-3 gap-x-4 gap-y-4 place-items-center">

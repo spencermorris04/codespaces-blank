@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@clerk/nextjs';
 import MusicPlayer from '~/components/MusicPlayer';
 import { addPoints } from '../../store/slices/pointsSlice';
 import { AppDispatch } from '../../store/store';
@@ -13,6 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateFeedback, resetFeedback } from '~/app/store/slices/feedbackSlice';
 import { RootState } from '~/app/store/store';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '~/util/supabase/client'
 
 
 interface Song {
@@ -54,12 +54,26 @@ const SongEngine = () => {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSongPlaying, setIsSongPlaying] = useState(false);
-  const { userId, getToken } = useAuth();
+  const supabase = createClient();
+  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
   const dispatch = useDispatch<AppDispatch>();
   const isMobile = isMobileDevice();
 
   const [isSwiping, setIsSwiping] = useState(false);
 
+  useEffect(() => {
+    // Define the async function inside the useEffect
+    async function fetchUserId() {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data?.user) {
+      } else {
+        setUserId(data.user.id); // Set userId state
+      }
+    }
+
+    fetchUserId(); // Call the function
+  }, []); // Empty dependency array to run once on mount
 
   const currentFeedback = useSelector((state: RootState) => state.feedback);
 
@@ -67,7 +81,6 @@ const SongEngine = () => {
     const submitFeedback = async () => {
       if (!selectedSong || !userId) return;
   
-      const token = await getToken();
       const submissionData = {
         ...currentFeedback,
         r2Id: selectedSong.r2Id,
@@ -81,7 +94,6 @@ const SongEngine = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
           },
           body: JSON.stringify(submissionData),
         });
@@ -114,12 +126,10 @@ const SongEngine = () => {
   const fetchSongDetails = useCallback(async () => {
     setLoading(true);
     try {
-      const token = await getToken();
       const response = await fetch('/api/getOldestSongFromQueue', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ userId }),
       });
@@ -134,7 +144,6 @@ const SongEngine = () => {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ objectKeys: [songData.r2Id] }),
         });
@@ -154,7 +163,7 @@ const SongEngine = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId, getToken]);
+  }, [userId]);
 
   useEffect(() => {
     fetchSongDetails();
@@ -163,13 +172,11 @@ const SongEngine = () => {
   const onFeedbackSubmitted = async () => {
     if (selectedSong && userId) {
       try {
-        const token = await getToken();
         // Remove the song from the queue
         const removeResponse = await fetch('/api/removeFromQueue', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({ r2Id: selectedSong.r2Id, timestamp: selectedSong.timestamp }),
         });

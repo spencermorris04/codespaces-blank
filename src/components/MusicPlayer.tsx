@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCurrentTime, setDuration as setDurationAction } from '~/app/store/slices/musicPlayerSlice';
+import { setCurrentTime, setMaxWatchedTime, setDuration as setDurationAction } from '~/app/store/slices/musicPlayerSlice';
 import { selectMaxWatchedTime } from '~/app/store/selectors/musicPlayerSelectors';
 import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeUp } from 'react-icons/fa';
 import '~/app/styles/MusicPlayer.css'; // Assuming you have a CSS file for additional styles
@@ -8,9 +8,10 @@ import '~/app/styles/MusicPlayer.css'; // Assuming you have a CSS file for addit
 interface MusicPlayerProps {
   songUrl: string;
   onEnded?: () => void;
+  seekForwardDenial?: boolean; // New prop to control seek forward behavior
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForwardDenial = true }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useDispatch();
   const maxWatchedTime = useSelector(selectMaxWatchedTime);
@@ -20,98 +21,109 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
   const [volume, setVolume] = useState(0.5);
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
+  const toggleVolumeSlider = () => setShowVolumeSlider(!showVolumeSlider);
+
+  // Effect for handling audio play, pause, and metadata loading
   useEffect(() => {
     const audio = audioRef.current;
-    if (audio) {
-      audio.src = songUrl;
-      audio.volume = volume;
+    if (!audio) return;
 
-      const autoplay = async () => {
-        if (!isMobileDevice() && audio) {
-          try {
-            await audio.play();
-            setIsPlaying(true);
-          } catch (error) {
-            console.log("Autoplay was prevented.");
-          }
-        }
-      };
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleTimeUpdate = () => {
+      setCurrentTimeLocal(audio.currentTime);
+      dispatch(setCurrentTime(audio.currentTime));
+    };
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      dispatch(setDurationAction(audio.duration));
+    };
 
-      autoplay();
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', () => onEnded?.());
 
-      const handleTimeUpdate = () => {
-        setCurrentTimeLocal(audio.currentTime);
-        // Update maxWatchedTime only if currentTime exceeds it
-        if (audio.currentTime > maxWatchedTime) {
-          dispatch(setCurrentTime(audio.currentTime));
-        }
-      };
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', () => onEnded?.());
+    };
+  }, [dispatch, onEnded]);
 
-      const handleLoadedMetadata = () => {
-        if (audioRef.current) {
-          const { duration } = audioRef.current;
-          if (duration > 0) {
-            setDuration(duration); // Update local state using the local state setter function
-            dispatch(setDurationAction(duration)); // Dispatch to Redux store using the renamed action creator
-          }
-        }
-      };
-      
+  // Effect for songUrl change
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
 
-      audio.addEventListener('timeupdate', handleTimeUpdate);
-      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.addEventListener('ended', () => {
-        onEnded?.();
-        setIsPlaying(false);
-      });
+    setIsPlaying(false);
+    setCurrentTimeLocal(0);
+    setDuration(0);
+    dispatch(setCurrentTime(0));
+    dispatch(setMaxWatchedTime(0));
+    audio.src = songUrl; // Load new song
 
-      return () => {
-        audio.removeEventListener('timeupdate', handleTimeUpdate);
-        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      };
-    }
-  }, [songUrl, onEnded, dispatch, volume]);
+    // Attempt autoplay for the new song
+    const autoplay = async () => {
+      try {
+        await audio.play();
+      } catch (error) {
+        console.log("Autoplay was prevented.");
+      }
+    };
+    autoplay();
+  }, [songUrl, dispatch]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
-    if (audio) {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
+    if (!audio) return;
+
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
     }
   };
 
   const seekBack = () => {
     const audio = audioRef.current;
-    if (audio) {
-      audio.currentTime = Math.max(0, audio.currentTime - 5);
-    }
+    if (audio) audio.currentTime = Math.max(0, audio.currentTime - 5);
   };
 
   const seekForward = () => {
     const audio = audioRef.current;
-    if (audio) {
-      // Limit seeking forward to the maximum watched time
-      const seekTo = Math.min(audio.currentTime + 5, maxWatchedTime);
-      audio.currentTime = seekTo < duration ? seekTo : audio.currentTime;
-    }
+    if (!audio) return;
+
+    const seekTo = seekForwardDenial ? Math.min(audio.currentTime + 5, maxWatchedTime) : audio.currentTime + 5;
+    audio.currentTime = Math.min(seekTo, duration);
   };
 
-  const toggleVolumeSlider = () => setShowVolumeSlider(!showVolumeSlider);
+  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const timelineWidth = e.currentTarget.offsetWidth;
+    const clickPosition = e.nativeEvent.offsetX;
+    const seekToPercentage = clickPosition / timelineWidth;
+    const seekToTime = seekToPercentage * duration;
+    audio.currentTime = seekForwardDenial && seekToTime > maxWatchedTime ? maxWatchedTime : seekToTime;
+  };
 
   const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+
+
   return (
-    <div className="music-player" style={{ minWidth: '200px' }}>
+    <div className="music-player bg-black px-4 py-2 outline-white outline outline-3 rounded-xl" style={{ minWidth: '200px' }}>
       <audio ref={audioRef} />
       <div className="controls">
         <button onClick={seekBack}><FaBackward /></button>
         <button onClick={togglePlay}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
         <button onClick={seekForward}><FaForward /></button>
-        <div className="time-info">{formatTime(currentTime)} / {formatTime(duration)}</div>
+        <div className="time-info text-white">{formatTime(currentTime)} / {formatTime(duration)}</div>
         <button onClick={toggleVolumeSlider} className="volume-btn"><FaVolumeUp /></button>
         {showVolumeSlider && (
           <input
@@ -125,7 +137,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded }) => {
           />
         )}
       </div>
-      <div className="timeline">
+      <div className="timeline" onClick={handleTimelineClick}>
         <div className="base-line">
           <div className="current-time-line" style={{ width: `${(currentTime / duration) * 100}%` }} />
           <div className="max-watched-time-line" style={{ width: `${(maxWatchedTime / duration) * 100}%` }} />
