@@ -1,16 +1,22 @@
 import React from 'react';
 
-// Define the Song interface
+interface Question {
+  timestamp: string;
+  question: string;
+}
+
 interface Song {
-  id: number;
-  songTitle: string;
+  id?: number; // Optional because it's not used everywhere
   r2Id: string;
-  uploaderUserId: string;
+  songTitle: string;
   genre: string;
   instruments: string;
   contribution: string;
   description: string;
   lyrics: string;
+  presignedUrl: string;
+  questions: Question[]; // Updated to reflect a structure for the questions
+  uploaderUserId: string;
 }
 
 interface SongCardProps {

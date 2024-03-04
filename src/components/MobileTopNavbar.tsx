@@ -5,12 +5,12 @@ import { Search as SearchIcon, Notifications as NotificationsIcon } from '@mui/i
 import { styled, alpha } from '@mui/material/styles';
 import UploadModalComponent from './UploadModal';
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@clerk/nextjs";
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserPoints } from '../app/store/slices/pointsSlice'; // Adjust the path as needed
 import { RootState, AppDispatch } from '../app/store/store';
 import { useSpring, animated } from 'react-spring';
 import MenuIcon from '@mui/icons-material/Menu'; // Import the hamburger icon
+import { createClient } from '~/util/supabase/client'; 
 
 
 
@@ -63,11 +63,24 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const MobileTopNavbar = () => {
+  const [user, setUser] = useState(null); // State to hold the user object
   const [open, setOpen] = useState(false);
   const [pointsDisplay, setPointsDisplay] = useState<number | string>('');
   const [lastPoints, setLastPoints] = useState<number>(0);
-  const { user } = useUser();
   const dispatch = useDispatch<AppDispatch>(); // Correctly type the dispatch
+
+    // Fetch the user from Supabase
+    useEffect(() => {
+      const fetchUser = async () => {
+        const supabase = createClient();
+        const { data, error } = await supabase.auth.getUser();
+        if (!error && data?.user) {
+          setUser(data.user);
+        }
+      };
+  
+      fetchUser();
+    }, []);
 
   // Get the total points from Redux store
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);

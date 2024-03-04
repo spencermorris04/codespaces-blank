@@ -12,17 +12,17 @@ interface Question {
 }
 
 interface Song {
-  id: number;
-  songTitle: string;
+  id?: number; // Optional because it's not used everywhere
   r2Id: string;
-  presignedUrl?: string;
-  uploaderUserId: string;
-  genre: string[];
-  instruments: string[];
-  contribution: string[];
+  songTitle: string;
+  genre: string;
+  instruments: string;
+  contribution: string;
   description: string;
   lyrics: string;
-  questions: Question[];
+  presignedUrl: string;
+  questions: Question[]; // Updated to reflect a structure for the questions
+  uploaderUserId: string;
 }
 
 interface QuestionEditingModalProps {

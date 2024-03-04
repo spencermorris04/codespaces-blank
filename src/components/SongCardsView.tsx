@@ -8,6 +8,31 @@ import QuestionEditingModal from '~/components/QuestionEditingModal';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify'; // Assuming you're using react-toastify for notifications
 
+interface Question {
+  timestamp: string;
+  question: string;
+}
+
+interface Song {
+  id?: number; // Optional because it's not used everywhere
+  r2Id: string;
+  songTitle: string;
+  genre: string;
+  instruments: string;
+  contribution: string;
+  description: string;
+  lyrics: string;
+  presignedUrl: string;
+  questions: Question[]; // Updated to reflect a structure for the questions
+  uploaderUserId: string;
+}
+
+interface Props {
+  songs: Song[];
+  loading: boolean;
+  title: string;
+}
+
 const isMobileDevice = () => {
   if (typeof window !== 'undefined') {
     return /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
@@ -15,13 +40,13 @@ const isMobileDevice = () => {
   return false;
 };
 
-const SongCardsView = ({ songs, loading, title }) => {
-  const [selectedSong, setSelectedSong] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+const SongCardsView: React.FC<Props> = ({ songs, loading, title }) => {
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const isMobile = isMobileDevice();
-  const listRef = useRef(null); // Define listRef using useRef
+  const listRef = useRef<HTMLDivElement>(null); // Define listRef using useRef
 
-  const filteredSongs = songs.filter(song => song.songTitle.toLowerCase().includes(title.toLowerCase()));
+  const filteredSongs = songs.filter((song: Song) => song.songTitle.toLowerCase().includes(title.toLowerCase()));
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -37,7 +62,7 @@ const SongCardsView = ({ songs, loading, title }) => {
     replace(`${pathname}?${params.toString()}`);
   }
 
-  const handleCardClick = (song) => {
+  const handleCardClick = (song: Song) => {
     setSelectedSong(song);
   };
 
@@ -46,7 +71,7 @@ const SongCardsView = ({ songs, loading, title }) => {
   };
 
   // Function to handle the save action from QuestionEditingModal
-  const handleSave = async (updatedSong) => {
+  const handleSave = async (updatedSong: Song) => {
     try {
       const response = await fetch('/api/updateSong', { // Ensure this URL matches your API route
         method: 'POST',
@@ -90,9 +115,9 @@ const SongCardsView = ({ songs, loading, title }) => {
     <>
       <div className="flex h-[85vh] mx-4">
         {/* Left Pane - List of Song Cards */}
-        <div className="relative flex-1 w-3/5 mt-2">
+        <div className="relative flex-1 w-3/5">
           <div ref={listRef} className="px-2 pt-2 overflow-y-auto no-scrollbar h-full">
-          <div className="relative flex flex-1 flex-shrink-0">
+          <div className="relative flex flex-1 flex-shrink-0 mt-2">
             <label htmlFor="search" className="sr-only">
               Search
             </label>
@@ -107,7 +132,7 @@ const SongCardsView = ({ songs, loading, title }) => {
           </div>
             <div className="grid grid-cols-2 gap-y-0 gap-x-5 items-stretch mb-10">
               {filteredSongs.map((song) => (
-                <div key={song.id} className="flex flex-col h-full">
+                <div key={song.r2Id} className="flex flex-col h-full">
                   <SongCard song={song} onEdit={() => handleEditClick()} onClick={() => handleCardClick(song)} />
                 </div>
               ))}
@@ -123,7 +148,7 @@ const SongCardsView = ({ songs, loading, title }) => {
           <div className="flex-2 w-2/5 ml-2 my-4 py-4 px-8 bg-black outline outline-2 outline-black text-neo-light-pink rounded-lg shadow-lg flex flex-col">
             {selectedSong ? (
               <>
-                <h2 className="text-4xl mt-2 font-bold mb-6 text-center">{selectedSong.songTitle}</h2>
+                <h2 className="mt-2 font-bold mb-6 text-center text-3xl" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', textOverflow: 'ellipsis' }}>{selectedSong.songTitle}</h2>
                 <div className="flex-grow overflow-y-auto no-scrollbar">
                   <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                     <strong>Genre:</strong> {selectedSong.genre}
@@ -145,7 +170,7 @@ const SongCardsView = ({ songs, loading, title }) => {
                 </div>
                 <div className="self-center flex mt-4">
                   {/* Pass seekForwardDenial prop with value true */}
-                  <MusicPlayer key={selectedSong.id} songUrl={selectedSong.presignedUrl || ''} seekForwardDenial={false} />
+                  <MusicPlayer key={selectedSong.r2Id} songUrl={selectedSong.presignedUrl || ''} seekForwardDenial={false} />
                 </div>
 
                 {/* UploadSongToQueue button and Edit Button */}
