@@ -7,13 +7,33 @@ import { store } from '~/app/store/store';
 import TopNavbar from '~/components/TopNavbar';
 import MobileTopNavbar from '~/components/MobileTopNavbar';
 
+interface User {
+  id: string;
+  aud: string;
+  role: string; // Ensure role is always a string
+  email: string;
+  email_confirmed_at: string | null;
+  phone: string;
+  phone_confirmed_at: string | null;
+  confirmed_at: string | null;
+  last_sign_in_at: string;
+  app_metadata: {
+    provider: string;
+    providers: string[];
+  };
+  user_metadata: any; // Type according to your user metadata structure
+  identities: any[]; // Type according to your user identities structure
+  created_at: string;
+  updated_at: string;
+}
+
 interface ClientSideLayoutProps {
   children: ReactNode;
 }
 
 const ClientSideLayout: React.FC<ClientSideLayoutProps> = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [user, setUser] = useState(null); // State to hold the user object
+  const [user, setUser] = useState<User | null>(null); // Specify the type of user
   const router = useRouter();
 
   useEffect(() => {
@@ -31,33 +51,27 @@ const ClientSideLayout: React.FC<ClientSideLayoutProps> = ({ children }) => {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        setUser(session.user);
-      } else {
-        router.push('/login');
+        const user: User = {
+          ...session.user,
+          role: session.user.role || "defaultRole",
+          email: session.user.email || "default@email.com", // Provide a default email if undefined
+        };        
+        setUser(user);
       }
+      
     };
 
     checkAuth();
   }, [router]);
 
-  // Function to recursively clone and inject props into children
-  const injectPropsToChildren = (children: ReactNode, addedProps: {}) => {
-    return React.Children.map(children, child => {
-      if (React.isValidElement(child)) {
-        return React.cloneElement(child, addedProps);
-      }
-      return child;
-    });
-  };
-
   return (
     <Provider store={store}>
       <div className="w-full h-screen flex flex-col">
         <div className="border-b-4 border-black">
-          {isMobile ? <MobileTopNavbar user={user} /> : <TopNavbar user={user} />}
+          {user ? <TopNavbar user={user} /> : <MobileTopNavbar />}
         </div>
         <main className="flex-1 overflow-y-auto bg-neo-light-cream">
-          {injectPropsToChildren(children, { user })}
+          {children}
         </main>
       </div>
     </Provider>

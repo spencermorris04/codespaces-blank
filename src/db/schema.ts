@@ -34,7 +34,8 @@ export const songs = pgTable('songs', {
   contribution: varchar('contribution', { length: 255 }),
   description: text('description'),
   lyrics: text('lyrics'),
-  questions: jsonb('questions') // JSONB for flexible questions structure
+  timedQuestions: jsonb('timedQuestions'), // JSONB for flexible timed questions structure
+  endOfSongQuestions: jsonb('endOfSongQuestions') // JSONB for flexible end of song questions structure
 });
 
 // SongFeedback table
@@ -43,12 +44,7 @@ export const songFeedback = pgTable('songFeedback', {
   reviewerUserId: varchar('reviewerUserId', { length: 255 }),
   uploaderUserId: varchar('uploaderUserId', { length: 255 }),
   r2Id: varchar('r2Id', { length: 255 }),
-  productionFeedback: text('productionFeedback'),
-  instrumentationFeedback: text('instrumentationFeedback'),
-  songwritingFeedback: text('songwritingFeedback'),
-  vocalsFeedback: text('vocalsFeedback'),
-  otherFeedback: text('otherFeedback'),
-  timestamp: timestamp('timestamp')
+  answers: jsonb('answers') // JSONB for flexible answer structure
 });
 
 // PointsTransactions table

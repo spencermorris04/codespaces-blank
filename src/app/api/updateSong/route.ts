@@ -2,14 +2,27 @@ import { db } from '~/db/index';
 import { songs } from '~/db/schema';
 import { eq } from 'drizzle-orm';
 
+// Define an interface for the incoming song data, adjusting for timedQuestions and endOfSongQuestions
+interface SongData {
+  id: number;
+  songTitle: string;
+  genre: string | string[]; // Adjust the type according to your data structure
+  instruments: string | string[]; // Adjust the type according to your data structure
+  contribution: string | string[]; // Adjust the type according to your data structure
+  description: string;
+  lyrics: string;
+  timedQuestions: any[]; // Adjusted for JSONB field
+  endOfSongQuestions: string[]; // Adjusted for JSONB field
+}
+
 export async function POST(request: Request) {
   try {
-    const songData = await request.json();
+    const songData: SongData = await request.json(); // Explicitly annotate the type of songData
 
-    // Helper function to ensure the data is in string format
-    const ensureString = (data) => Array.isArray(data) ? data.join(', ') : data;
+    // Helper function to ensure the data is in string format for varchar fields
+    const ensureString = (data: string | string[]) => Array.isArray(data) ? data.join(', ') : data;
 
-    // Update the song in the database
+    // Update the song in the database, including handling of JSONB fields
     const updateResult = await db.update(songs).set({
       songTitle: songData.songTitle,
       genre: ensureString(songData.genre),
@@ -17,7 +30,9 @@ export async function POST(request: Request) {
       contribution: ensureString(songData.contribution),
       description: songData.description,
       lyrics: songData.lyrics,
-      questions: songData.questions, // Remove JSON.parse() call
+      // Directly set the JSONB fields without needing to join or ensure string format
+      timedQuestions: songData.timedQuestions,
+      endOfSongQuestions: songData.endOfSongQuestions,
     }).where(eq(songs.id, songData.id));
     
     // Check if the update operation was successful
@@ -32,7 +47,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
     });
-  } catch (error) {
+  } catch (error: any) { // Catching any type of error
     console.error('Failed to update song:', error);
     return new Response(JSON.stringify({ message: 'Internal Server Error', error: error.message }), {
       status: 500,

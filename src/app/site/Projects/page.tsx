@@ -43,7 +43,7 @@ export default async function ProjectsPage({
   return (
     <>
       <div className="mx-4">
-        <SongCardsView songs={songs} title={titleSearch} />
+        <SongCardsView songs={songs} title={titleSearch} loading={false} />
       </div>
     </>
   );
@@ -61,13 +61,24 @@ async function fetchUserSongs(userId) {
       contribution: songsSchema.contribution,
       description: songsSchema.description,
       lyrics: songsSchema.lyrics,
-      questions: songsSchema.questions,
+      timedQuestions: songsSchema.timedQuestions,
+      endOfSongQuestions: songsSchema.endOfSongQuestions,
     }).from(songsSchema).where(eq(songsSchema.uploaderUserId, userId));
 
     // Generate pre-signed URLs for each song
     const songsWithUrls = await Promise.all(songRecords.map(async (song) => {
       const url = await generatePresignedUrl(song.r2Id);
-      return { ...song, presignedUrl: url };
+
+      // Use the questions directly without parsing, assuming they are already in the correct format
+      return {
+        ...song,
+        presignedUrl: url,
+        // Directly use the properties as they should already be in the correct format
+        questions: [
+          ...(song.timedQuestions || []),
+          ...(song.endOfSongQuestions || []),
+        ],
+      };
     }));
 
     return songsWithUrls;
@@ -76,6 +87,7 @@ async function fetchUserSongs(userId) {
     return []; // Handle errors appropriately
   }
 }
+
 
 async function generatePresignedUrl(objectKey) {
   const command = new GetObjectCommand({

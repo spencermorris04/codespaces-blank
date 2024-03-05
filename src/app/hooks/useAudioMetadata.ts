@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setDuration, setCurrentTime } from '~/app/store/slices/musicPlayerSlice';
 
-const useAudioMetadata = (audioRef, songUrl) => {
+// Define the types for audioRef and songUrl
+type AudioRefType = React.MutableRefObject<HTMLAudioElement | null>;
+type SongUrlType = string;
+
+const useAudioMetadata = (audioRef: AudioRefType, songUrl: SongUrlType) => {
   const dispatch = useDispatch();
 
   useEffect(() => {

@@ -5,13 +5,26 @@ import { selectMaxWatchedTime } from '~/app/store/selectors/musicPlayerSelectors
 import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeUp } from 'react-icons/fa';
 import '~/app/styles/MusicPlayer.css'; // Assuming you have a CSS file for additional styles
 
+interface TimedQuestion {
+  timestamp: string;
+  question: string;
+}
+
 interface MusicPlayerProps {
   songUrl: string;
   onEnded?: () => void;
   seekForwardDenial?: boolean; // New prop to control seek forward behavior
+  onTimestampReached?: (timestamp: string, question: string) => void;
+  timedQuestions: TimedQuestion[]; // Add this prop to pass the timed questions
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForwardDenial = true }) => {
+const MusicPlayer: React.FC<MusicPlayerProps> = ({
+  songUrl,
+  onEnded,
+  seekForwardDenial = true,
+  onTimestampReached,
+  timedQuestions,
+}) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useDispatch();
   const maxWatchedTime = useSelector(selectMaxWatchedTime);
@@ -23,17 +36,34 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForward
 
   const toggleVolumeSlider = () => setShowVolumeSlider(!showVolumeSlider);
 
+  // stop music player interaction from messing with modal states
+  const handleMusicPlayerClick = (e: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
+    e.stopPropagation();
+  };
+
   // Effect for handling audio play, pause, and metadata loading
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
     const handlePlay = () => setIsPlaying(true);
+
     const handlePause = () => setIsPlaying(false);
+
     const handleTimeUpdate = () => {
       setCurrentTimeLocal(audio.currentTime);
       dispatch(setCurrentTime(audio.currentTime));
+    
+      // Check if the current time matches any of the specified timestamps
+      const timestamp = audio.currentTime.toFixed(6);
+      const matchingQuestion = timedQuestions?.find((q) => q.timestamp === timestamp); // Use optional chaining
+      if (matchingQuestion) {
+        audio.pause();
+        setIsPlaying(false);
+        onTimestampReached?.(timestamp, matchingQuestion.question);
+      }
     };
+
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
       dispatch(setDurationAction(audio.duration));
@@ -52,7 +82,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForward
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', () => onEnded?.());
     };
-  }, [dispatch, onEnded]);
+  }, [dispatch, onEnded, timedQuestions, onTimestampReached]);
 
   // Effect for songUrl change
   useEffect(() => {
@@ -114,17 +144,15 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForward
 
   const isMobileDevice = () => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-
-
   return (
     <div className="music-player bg-black px-4 py-2 outline-white outline outline-3 rounded-xl" style={{ minWidth: '200px' }}>
       <audio ref={audioRef} />
       <div className="controls">
-        <button onClick={seekBack}><FaBackward /></button>
-        <button onClick={togglePlay}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
-        <button onClick={seekForward}><FaForward /></button>
+        <button onClick={(e) => { seekBack(); handleMusicPlayerClick(e); }}><FaBackward /></button>
+        <button onClick={(e) => { togglePlay(); handleMusicPlayerClick(e); }}>{isPlaying ? <FaPause /> : <FaPlay />}</button>
+        <button onClick={(e) => { seekForward(); handleMusicPlayerClick(e); }}><FaForward /></button>
         <div className="time-info text-white">{formatTime(currentTime)} / {formatTime(duration)}</div>
-        <button onClick={toggleVolumeSlider} className="volume-btn"><FaVolumeUp /></button>
+        <button onClick={(e) => { toggleVolumeSlider(); handleMusicPlayerClick(e); }} className="volume-btn"><FaVolumeUp /></button>
         {showVolumeSlider && (
           <input
             type="range"
@@ -133,11 +161,11 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ songUrl, onEnded, seekForward
             max="1"
             step="0.01"
             value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            onChange={(e) => { setVolume(parseFloat(e.target.value)); handleMusicPlayerClick(e); }}
           />
         )}
       </div>
-      <div className="timeline" onClick={handleTimelineClick}>
+      <div className="timeline" onClick={(e) => { handleTimelineClick(e); handleMusicPlayerClick(e); }}>
         <div className="base-line">
           <div className="current-time-line" style={{ width: `${(currentTime / duration) * 100}%` }} />
           <div className="max-watched-time-line" style={{ width: `${(maxWatchedTime / duration) * 100}%` }} />
