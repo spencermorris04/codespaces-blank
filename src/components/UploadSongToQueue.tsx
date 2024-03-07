@@ -5,11 +5,11 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchUserPoints, removePoints } from '../app/store/slices/pointsSlice';
 import { RootState, AppDispatch } from '../app/store/store';
-import { createClient } from '~/util/supabase/client'
-import { redirect } from 'next/navigation'
+import { createClient } from '~/util/supabase/client';
+import { redirect } from 'next/navigation';
 
 interface UploadSongToQueueProps {
-  song?: { // Making it optional if you want to allow calling the component without a song
+  song?: {
     songTitle: string;
     r2Id: string;
     uploaderUserId: string;
@@ -18,31 +18,31 @@ interface UploadSongToQueueProps {
     contribution: string;
     description: string;
     lyrics: string;
+    timedQuestions: { timestamp: string; question: string }[];
+    endOfSongQuestions: string[];
   };
-  onSuccess?: () => void; // Adding onSuccess callback
+  onSuccess?: () => void;
 }
 
 const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song, onSuccess }) => {
-  const dispatch = useDispatch<AppDispatch>(); // Use the AppDispatch type here
+  const dispatch = useDispatch<AppDispatch>();
   const totalPoints = useSelector((state: RootState) => state.points.totalPoints);
   const costOfAddingToQueue = 200;
-
-  const [userId, setUserId] = useState<string | null>(null); // Initialize userId state
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Define the async function inside the useEffect
     async function fetchUserId() {
       const supabase = createClient();
       const { data, error } = await supabase.auth.getUser();
       if (error || !data?.user) {
         redirect('/login');
       } else {
-        setUserId(data.user.id); // Set userId state
+        setUserId(data.user.id);
       }
     }
 
-    fetchUserId(); // Call the function
-  }, []); // Empty dependency array to run once on mount
+    fetchUserId();
+  }, []);
 
   const handleUploadToQueue = async () => {
     if (!userId) {
@@ -62,14 +62,19 @@ const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song, onSuccess }
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...song, timestamp }),
+        body: JSON.stringify({
+          ...song,
+          timestamp,
+          timedQuestions: JSON.stringify(song?.timedQuestions || []),
+          endOfSongQuestions: JSON.stringify(song?.endOfSongQuestions || []),
+        }),
       });
 
       if (addToQueueResponse.ok) {
         dispatch(removePoints({ userId, points: costOfAddingToQueue }));
         toast.success('Song added to queue successfully');
         if (onSuccess) {
-          onSuccess(); // Call onSuccess callback after successful upload
+          onSuccess();
         }
       } else {
         const errorText = await addToQueueResponse.text();
@@ -86,7 +91,7 @@ const UploadSongToQueue: React.FC<UploadSongToQueueProps> = ({ song, onSuccess }
 
   return (
     <div>
-      <button 
+      <button
         className="bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4"
         onClick={handleUploadToQueue}
       >

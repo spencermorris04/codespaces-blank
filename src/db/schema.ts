@@ -56,7 +56,7 @@ export const pointsTransactions = pgTable('points', {
   timestamp: timestamp('timestamp')
 });
 
-// Queue table with newUser flag
+// Queue table with newUser flag and questions
 export const queue = pgTable('queue', {
   id: serial("id").primaryKey(),
   songTitle: text('songTitle'),
@@ -68,7 +68,9 @@ export const queue = pgTable('queue', {
   description: text('description'),
   lyrics: text('lyrics'),
   timestamp: timestamp('timestamp'),
-  newUser: boolean('newUser').default(false)
+  newUser: boolean('newUser').default(false),
+  timedQuestions: jsonb('timedQuestions'), // JSONB for flexible timed questions structure
+  endOfSongQuestions: jsonb('endOfSongQuestions') // JSONB for flexible end of song questions structure
 });
 
 // Friending functionality with a separate table

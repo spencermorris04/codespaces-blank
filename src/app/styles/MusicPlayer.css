@@ -23,7 +23,7 @@
     position: absolute;
     top: 0;
     z-index: 1;
-  }  
+  }
   
   .music-player .timeline .max-watched-time-line {
     height: 5px;
@@ -33,3 +33,11 @@
     z-index: 0;
   }
   
+  .music-player .timeline .question-marker {
+    position: absolute;
+    top: -5px;
+    width: 2px;
+    height: 15px;
+    background-color: white;
+    z-index: 2;
+  }

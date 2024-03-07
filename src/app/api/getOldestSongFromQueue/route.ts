@@ -17,7 +17,9 @@ export async function POST(request: Request) {
       contribution: queue.contribution,
       description: queue.description,
       lyrics: queue.lyrics,
-      timestamp: queue.timestamp
+      timestamp: queue.timestamp,
+      timedQuestions: queue.timedQuestions, // Add the timedQuestions field
+      endOfSongQuestions: queue.endOfSongQuestions, // Add the endOfSongQuestions field
     }).from(queue)
       .where(ne(sql`${queue.uploaderUserId}`, sql`${userId}`))
       .orderBy(asc(queue.timestamp))
