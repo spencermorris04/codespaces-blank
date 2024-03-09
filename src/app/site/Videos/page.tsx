@@ -1,61 +1,54 @@
-"use client";
-import React, { useState, useRef, useEffect } from 'react';
-import dynamic from 'next/dynamic';
+// app/page.tsx
+'use client';
+import { useState } from 'react';
+import ReactPlayer from 'react-player';
 
-const DashjsPlayer = dynamic(
-  () => {
-    return import('dashjs').then((dashjs) => {
-      return ({ manifestUrl, videoRef }) => {
-        useEffect(() => {
-          if (!videoRef.current) return;
-
-          const player = dashjs.MediaPlayer().create();
-          player.initialize(videoRef.current, manifestUrl, true);
-
-          return () => {
-            player.reset();
-          };
-        }, [manifestUrl, videoRef]);
-
-        return <video ref={videoRef} width="640" height="360" controls />;
-      };
-    });
-  },
-  { ssr: false }
-);
-
-const VideoPlayerPage = () => {
+export default function Home() {
   const [videoId, setVideoId] = useState('');
-  const [manifestUrl, setManifestUrl] = useState('');
-  const videoRef = useRef(null);
+  const [videoSources, setVideoSources] = useState<{ [key: string]: string }>({});
+  const [selectedQuality, setSelectedQuality] = useState('');
 
-  const fetchManifestUrl = async () => {
-    try {
-      const response = await fetch(`/api/getYoutubeUrl/${videoId}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch the video manifest');
-      }
-      const manifest = await response.text();
-      const blob = new Blob([manifest], { type: 'application/dash+xml' });
-      const url = URL.createObjectURL(blob);
-      setManifestUrl(url);
-    } catch (error) {
-      console.error('Error fetching video manifest:', error);
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const res = await fetch(`/api/get-video-url?video_id=${videoId}`);
+
+    if (!res.ok) {
+      console.error('Failed to fetch video info');
+      return;
     }
+
+    const data = await res.json();
+    const video = data.videos;
+    setVideoSources(video);
+    setSelectedQuality(Object.keys(video)[0]);
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        value={videoId}
-        onChange={(e) => setVideoId(e.target.value)}
-        placeholder="Enter YouTube Video ID"
-      />
-      <button onClick={fetchManifestUrl}>Load Video</button>
-      {manifestUrl && <DashjsPlayer manifestUrl={manifestUrl} videoRef={videoRef} />}
-    </div>
+    <main>
+      <form onSubmit={handleSearch}>
+        <input
+          type="text"
+          placeholder="Enter video ID"
+          value={videoId}
+          onChange={(e) => setVideoId(e.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
+      {selectedQuality && (
+        <>
+          <ReactPlayer url={videoSources[selectedQuality]} controls />
+          <select
+            value={selectedQuality}
+            onChange={(e) => setSelectedQuality(e.target.value)}
+          >
+            {Object.keys(videoSources).map((quality) => (
+              <option key={quality} value={quality}>
+                {quality}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
+    </main>
   );
-};
-
-export default VideoPlayerPage;
+}

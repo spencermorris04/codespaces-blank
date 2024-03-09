@@ -5,6 +5,7 @@ import { setCurrentTime, setMaxWatchedTime, setDuration as setDurationAction } f
 import { selectMaxWatchedTime } from '~/app/store/selectors/musicPlayerSelectors';
 import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeUp } from 'react-icons/fa';
 import '~/app/styles/MusicPlayer.css';
+import FeedbackVideoPlayer from './FeedbackVideoPlayer';
 
 interface TimedQuestion {
   timestamp: string;
@@ -17,12 +18,15 @@ interface FeedbackMusicPlayerProps {
   onTimestampReached?: (timestamp: string, question: string) => void;
   timedQuestions: TimedQuestion[];
   audioRef: React.RefObject<HTMLAudioElement>;
+  seekForwardDenial?: boolean; // New prop to control seek forward behavior
+
 }
 
 const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
   songUrl,
   onEnded,
   onTimestampReached,
+  seekForwardDenial = true,
   timedQuestions,
   audioRef,
 }) => {
@@ -104,13 +108,15 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
 
     // Attempt autoplay for the new song
     const autoplay = async () => {
-      try {
-        await audio.play();
-        setIsPlaying(true);
-      } catch (error) {
-        console.log("Autoplay was prevented.");
-      }
-    };
+        try {
+          await audio.play();
+          setIsPlaying(true);
+        } catch (error) {
+          console.error("Autoplay error:", error);
+          // Handle or log error specifics
+        }
+      };
+      
     autoplay();
   }, [songUrl, dispatch, audioRef]);
 
@@ -134,7 +140,7 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
     const audio = audioRef.current;
     if (!audio) return;
 
-    const seekTo = audio.currentTime + 5;
+    const seekTo = seekForwardDenial ? Math.min(audio.currentTime + 5, maxWatchedTime) : audio.currentTime + 5;
     audio.currentTime = Math.min(seekTo, duration);
   };
 
@@ -146,12 +152,7 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
     const clickPosition = e.nativeEvent.offsetX;
     const seekToPercentage = clickPosition / timelineWidth;
     const seekToTime = seekToPercentage * duration;
-    audio.currentTime = seekToTime;
-
-    // Update maxWatchedTime only if the seekToTime exceeds the previous maxWatchedTime
-    if (seekToTime > maxWatchedTime) {
-      dispatch(setMaxWatchedTime(seekToTime));
-    }
+    audio.currentTime = seekForwardDenial && seekToTime > maxWatchedTime ? maxWatchedTime : seekToTime;
   };
 
   return (

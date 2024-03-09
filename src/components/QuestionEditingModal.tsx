@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import MusicPlayer from './MusicPlayer';
+import FeedbackMusicPlayer from './FeedbackMusicPlayer';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,6 +25,8 @@ interface Song {
   timedQuestions: Question[];
   endOfSongQuestions: string[];
   uploaderUserId: string;
+  vocalsStart: number;
+  vocalsEnd: number;
 }
 
 interface QuestionEditingModalProps {
@@ -46,6 +48,8 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
   const [selectedEndOfSongQuestionIndex, setSelectedEndOfSongQuestionIndex] = useState<number | null>(null);
   const timedQuestionRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
   const endOfSongQuestionRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
 
   useEffect(() => {
     const updateTextareaHeight = (ref: HTMLTextAreaElement | null) => {
@@ -220,7 +224,7 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
           <div className="w-1/4 px-2 overflow-auto max-h-[calc(75vh-150px)] no-scrollbar">
             {/* Instruments */}
             <div className="mb-4 bg-black px-2 py-1 rounded">
-              <label className="block text-white text-sm font-bold mb-2">Instruments:</label>
+              <label className="block text-white text-sm font-bold">Instruments:</label>
               <select
                 className="shadow no-scrollbar outline outline-3 outline-black rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 name="instruments"
@@ -236,7 +240,7 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
 
             {/* Description */}
             <div className="mb-4 bg-black px-2 py-1 rounded">
-              <label className="block no-scrollbar text-white text-sm font-bold mb-2">Description:</label>
+              <label className="block no-scrollbar text-white text-sm font-bold">Description:</label>
               <textarea
                 className="shadow appearance-none outline no-scrollbar outline-3 outline-black rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 name="description"
@@ -247,7 +251,7 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
 
             {/* Lyrics */}
             <div className="bg-black px-2 py-1 rounded">
-              <label className="block no-scrollbar text-white text-sm font-bold mb-2">Lyrics:</label>
+              <label className="block no-scrollbar text-white text-sm font-bold">Lyrics:</label>
               <textarea
                 className="shadow appearance-none no-scrollbar outline outline-3 outline-black rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                 name="lyrics"
@@ -294,7 +298,7 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
 
           {/* Fourth Pane - End of Song Questions */}
           <div className="w-1/4 px-2 overflow-auto max-h-[calc(75vh-150px)] no-scrollbar">
-            <h3 className="text-lg font-bold sticky mb-3 sticky top-1 bg-black text-white outline outline-white outline-3 text-center rounded z-10">End of Song Questions</h3>
+          <h3 className="text-lg font-bold sticky mb-3 sticky top-1 bg-black text-white outline outline-white outline-3 text-center rounded z-10">End of Song Questions</h3>
             {editableSong.endOfSongQuestions.map((question, index) => (
               <div key={index} className="mb-2 bg-black outline outline-3 outline-black rounded p-1 flex justify-between items-center">
                 <textarea
@@ -312,28 +316,69 @@ const QuestionEditingModal: React.FC<QuestionEditingModalProps> = ({ song, onClo
                   <DeleteIcon />
                 </button>
               </div>
-            ))}
-            <div className="">
-              <button
-                onClick={handleAddEndOfSongQuestion}
-                className={`bg-${editableSong.endOfSongQuestions.length >= 3 ? 'gray-200 w-full outline outline-4 text-gray-400 outline-black cursor-not-allowed' : 'white w-full outline outline-4 outline-black text-black hover:bg-black hover:text-white'} font-bold py-2 px-4 rounded`}
-                disabled={editableSong.endOfSongQuestions.length >= 3}
-              >
-                Add End of Song Question
-              </button>
+                ))}
+                <div className="">
+                  <button
+                    onClick={handleAddEndOfSongQuestion}
+                    className={`bg-${editableSong.endOfSongQuestions.length >= 3 ? 'gray-200 w-full outline outline-4 text-gray-400 outline-black cursor-not-allowed' : 'white w-full outline outline-4 outline-black text-black hover:bg-black hover:text-white'} font-bold py-2 px-4 rounded`}
+                    disabled={editableSong.endOfSongQuestions.length >= 3}
+                  >
+                    Add End of Song Question
+                  </button>
+                </div>
+            <div className="mb-2">
+              <label className="block text-white text-sm font-bold mb-2">Vocals Start:</label>
+              <div className="flex items-center">
+                <input
+                  className="shadow appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="number"
+                  step="0.01"
+                  value={editableSong.vocalsStart}
+                  onChange={(e) => setEditableSong(prev => ({ ...prev, vocalsStart: parseFloat(e.target.value) }))}
+                />
+                <button
+                  className="ml-2 bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded outline outline-4 outline-black"
+                  onClick={() => setEditableSong(prev => ({ ...prev, vocalsStart: currentTime }))}
+                >
+                  Set
+                </button>
+              </div>
+            </div>
+            <div className="mb-2">
+              <label className="block text-white text-sm font-bold mb-2">Vocals End:</label>
+              <div className="flex items-center">
+                <input
+                  className="shadow appearance-none rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  type="number"
+                  step="0.01"
+                  value={editableSong.vocalsEnd}
+                  onChange={(e) => setEditableSong(prev => ({ ...prev, vocalsEnd: parseFloat(e.target.value) }))}
+                />
+                <button
+                  className="ml-2 bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded outline outline-4 outline-black"
+                  onClick={() => setEditableSong(prev => ({ ...prev, vocalsEnd: currentTime }))}
+                >
+                  Set
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Music Player and Buttons */}
         <div className="flex justify-between items-end mt-4">
-          <MusicPlayer songUrl={editableSong.presignedUrl || ''} seekForwardDenial={false} />
+          <FeedbackMusicPlayer
+            songUrl={editableSong.presignedUrl || ''}
+            seekForwardDenial={false}
+            timedQuestions={editableSong.timedQuestions}
+            audioRef={audioRef}
+          />
           <div>
             <button onClick={onClose} className="ml-4 bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4">Close</button>
             <button onClick={handleSave} className="ml-4 bg-white hover:bg-black text-black hover:text-white font-bold py-2 px-4 rounded-xl outline outline-4">Save Changes</button>
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

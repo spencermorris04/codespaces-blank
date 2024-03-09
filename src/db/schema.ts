@@ -6,7 +6,8 @@ import {
   timestamp,
   jsonb,
   pgTable,
-  boolean
+  boolean,
+  real,
 } from 'drizzle-orm/pg-core';
 
 // UserDetails table
@@ -35,7 +36,9 @@ export const songs = pgTable('songs', {
   description: text('description'),
   lyrics: text('lyrics'),
   timedQuestions: jsonb('timedQuestions'), // JSONB for flexible timed questions structure
-  endOfSongQuestions: jsonb('endOfSongQuestions') // JSONB for flexible end of song questions structure
+  endOfSongQuestions: jsonb('endOfSongQuestions'), // JSONB for flexible end of song questions structure
+  vocalsStart: real('vocalsStart').default(0),
+  vocalsEnd: real('vocalsEnd'),
 });
 
 // SongFeedback table
@@ -70,7 +73,9 @@ export const queue = pgTable('queue', {
   timestamp: timestamp('timestamp'),
   newUser: boolean('newUser').default(false),
   timedQuestions: jsonb('timedQuestions'), // JSONB for flexible timed questions structure
-  endOfSongQuestions: jsonb('endOfSongQuestions') // JSONB for flexible end of song questions structure
+  endOfSongQuestions: jsonb('endOfSongQuestions'), // JSONB for flexible end of song questions structure
+  vocalsStart: real('vocalsStart').default(0),
+  vocalsEnd: real('vocalsEnd'),
 });
 
 // Friending functionality with a separate table

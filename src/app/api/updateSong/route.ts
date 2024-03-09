@@ -13,6 +13,8 @@ interface SongData {
   lyrics: string;
   timedQuestions: any[]; // Adjusted for JSONB field
   endOfSongQuestions: string[]; // Adjusted for JSONB field
+  vocalsStart: number;
+  vocalsEnd: number;
 }
 
 export async function POST(request: Request) {
@@ -33,6 +35,8 @@ export async function POST(request: Request) {
       // Directly set the JSONB fields without needing to join or ensure string format
       timedQuestions: songData.timedQuestions,
       endOfSongQuestions: songData.endOfSongQuestions,
+      vocalsStart: songData.vocalsStart,
+      vocalsEnd: songData.vocalsEnd,
     }).where(eq(songs.id, songData.id));
     
     // Check if the update operation was successful

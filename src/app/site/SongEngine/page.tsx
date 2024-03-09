@@ -30,6 +30,8 @@ interface SongEngineState {
   songEnded: boolean;
   timedQuestions: TimedQuestion[];
   endOfSongQuestions: Question[];
+  vocalsStart: number | null;
+  vocalsEnd: number | null;
 }
 
 interface Song {
@@ -46,6 +48,8 @@ interface Song {
   timestamp: string;
   timedQuestions: string; // Changed to string type
   endOfSongQuestions: string; // Changed to string type
+  vocalsStart: number;
+  vocalsEnd: number;
 }
 
 interface UrlData {
@@ -62,6 +66,8 @@ const SongEngine: React.FC = () => {
     songEnded: false,
     timedQuestions: [],
     endOfSongQuestions: [],
+    vocalsStart: 0,
+    vocalsEnd: 100,
   });
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,6 +76,7 @@ const SongEngine: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentTime = useSelector(selectCurrentTime);
+  const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     async function fetchUserId() {
@@ -133,6 +140,7 @@ const SongEngine: React.FC = () => {
 
   const fetchSongDetails = useCallback(async () => {
     setLoading(true);
+    console.log("Starting to fetch song details");
     try {
       const response = await fetch('/api/getOldestSongFromQueue', {
         method: 'POST',
@@ -141,13 +149,17 @@ const SongEngine: React.FC = () => {
         },
         body: JSON.stringify({ userId }),
       });
+      console.log("Received response from API");
   
       if (!response.ok) {
         throw new Error(`Failed to fetch the oldest song from queue: ${response.statusText}`);
       }
   
       const [songData] = await response.json();
+      console.log("Parsed JSON from API response:", songData);
+  
       if (songData) {
+        console.log("Fetching presigned URL for the song");
         const urlResponse = await fetch('/api/getR2SongUrls', {
           method: 'POST',
           headers: {
@@ -157,38 +169,55 @@ const SongEngine: React.FC = () => {
         });
   
         if (urlResponse.ok) {
-          const urlData: UrlData[] = await urlResponse.json();
-          songData.presignedUrl = urlData.find((url: UrlData) => url.objectKey === songData.r2Id)?.url;
+          const urlData = await urlResponse.json();
+          const presignedUrl = urlData.find((url) => url.objectKey === songData.r2Id)?.url;
+          console.log("Presigned URL:", presignedUrl);
   
-          // Parse endOfSongQuestions
+          // Update the songData object with the presigned URL
+          songData.presignedUrl = presignedUrl;
+  
+          // Logging to verify the vocalsStart and vocalsEnd before state update
+          console.log("vocalsStart from API:", songData.vocalsStart);
+          console.log("vocalsEnd from API:", songData.vocalsEnd);
+  
+          // Attempt to parse endOfSongQuestions if it's a string
           let parsedEndOfSongQuestions = [];
           try {
             if (typeof songData.endOfSongQuestions === 'string') {
-              const escapedEndOfSongQuestions = songData.endOfSongQuestions.replace(/"/g, '\\"');
-              parsedEndOfSongQuestions = JSON.parse(escapedEndOfSongQuestions).map(question => ({ question }));
+              console.log("Parsing endOfSongQuestions from string");
+              parsedEndOfSongQuestions = JSON.parse(songData.endOfSongQuestions).map(question => ({ question }));
             } else {
+              console.log("Using endOfSongQuestions as it is");
               parsedEndOfSongQuestions = songData.endOfSongQuestions.map(question => ({ question }));
             }
           } catch (error) {
             console.error('Error parsing endOfSongQuestions:', error);
           }
   
+          // Update the React state with the new song details
           setSelectedSong(songData);
           setState((prevState) => ({
             ...prevState,
             timedQuestions: songData.timedQuestions || [],
             endOfSongQuestions: parsedEndOfSongQuestions,
+            vocalsStart: songData.vocalsStart,
+            vocalsEnd: songData.vocalsEnd,
           }));
+        } else {
+          console.error("Failed to fetch presigned URL");
         }
       } else {
+        console.log("No song data found");
         setSelectedSong(null);
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching song details:', error);
     } finally {
       setLoading(false);
+      console.log("Finished fetching song details");
     }
   }, [userId]);
+  
   
   useEffect(() => {
     fetchSongDetails();
@@ -280,6 +309,28 @@ const SongEngine: React.FC = () => {
     }
   };
 
+  const handleLyricsScroll = () => {
+    const lyricsContainer = lyricsContainerRef.current;
+    if (lyricsContainer && audioRef.current && selectedSong) {
+      const { vocalsStart, vocalsEnd } = selectedSong;
+      const vocalsDuration = vocalsEnd - vocalsStart;
+      const scrollRatio = Math.max(0, Math.min((currentTime - vocalsStart) / vocalsDuration, 1));
+      const scrollHeight = lyricsContainer.scrollHeight - lyricsContainer.clientHeight;
+  
+      console.log('vocalsStart:', vocalsStart);
+      console.log('vocalsEnd:', vocalsEnd);
+      console.log('vocalsDuration:', vocalsDuration);
+      console.log('scrollRatio:', scrollRatio);
+      console.log('scrollHeight:', scrollHeight);
+  
+      lyricsContainer.scrollTop = scrollRatio * scrollHeight;
+    }
+  };
+
+  useEffect(() => {
+    handleLyricsScroll();
+  }, [currentTime, selectedSong]);
+
   return (
     <div className="flex flex-col py-4 h-full">
       <div className="flex-1 flex">
@@ -310,6 +361,7 @@ const SongEngine: React.FC = () => {
                 timedQuestions={state.timedQuestions}
                 onTimestampReached={handleTimestampReached}
                 onEnded={() => setState((prevState) => ({ ...prevState, songEnded: true }))}
+                seekForwardDenial = {false}
               />
             </div>
           )}
@@ -337,7 +389,12 @@ const SongEngine: React.FC = () => {
                 </div>
                 <div className="mb-2 bg-neo-light-pink px-4 py-2 rounded-lg text-black">
                   <strong>Lyrics:</strong>
-                  <p className="mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap h-[150px] overflow-y-scroll no-scrollbar">{selectedSong.lyrics}</p>
+                  <div
+                    ref={lyricsContainerRef}
+                    className="lyrics-container mt-1 bg-white px-4 py-2 rounded-lg text-black whitespace-pre-wrap h-[200px] overflow-y-scroll no-scrollbar"
+                  >
+                    {selectedSong.lyrics}
+                  </div>
                 </div>
               </div>
             </>
