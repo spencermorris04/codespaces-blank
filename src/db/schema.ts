@@ -74,7 +74,7 @@ export const queue = pgTable('queue', {
   newUser: boolean('newUser').default(false),
   timedQuestions: jsonb('timedQuestions'), // JSONB for flexible timed questions structure
   endOfSongQuestions: jsonb('endOfSongQuestions'), // JSONB for flexible end of song questions structure
-  vocalsStart: real('vocalsStart').default(0),
+  vocalsStart: real('vocalsStart'),
   vocalsEnd: real('vocalsEnd'),
 });
 

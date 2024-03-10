@@ -5,7 +5,6 @@ import { setCurrentTime, setMaxWatchedTime, setDuration as setDurationAction } f
 import { selectMaxWatchedTime } from '~/app/store/selectors/musicPlayerSelectors';
 import { FaPlay, FaPause, FaBackward, FaForward, FaVolumeUp } from 'react-icons/fa';
 import '~/app/styles/MusicPlayer.css';
-import FeedbackVideoPlayer from './FeedbackVideoPlayer';
 
 interface TimedQuestion {
   timestamp: string;
@@ -17,9 +16,9 @@ interface FeedbackMusicPlayerProps {
   onEnded?: () => void;
   onTimestampReached?: (timestamp: string, question: string) => void;
   timedQuestions: TimedQuestion[];
-  audioRef: React.RefObject<HTMLAudioElement>;
-  seekForwardDenial?: boolean; // New prop to control seek forward behavior
-
+  seekForwardDenial?: boolean;
+  onAudioRef?: (ref: React.RefObject<HTMLAudioElement>) => void;
+  onCanPlay?: () => void;
 }
 
 const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
@@ -28,7 +27,8 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
   onTimestampReached,
   seekForwardDenial = true,
   timedQuestions,
-  audioRef,
+  onAudioRef,
+  onCanPlay,
 }) => {
   const dispatch = useDispatch();
   const maxWatchedTime = useSelector(selectMaxWatchedTime);
@@ -39,7 +39,13 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   const sortedTimedQuestions = React.useMemo(() => timedQuestions.sort((a, b) => parseFloat(a.timestamp) - parseFloat(b.timestamp)), [timedQuestions]);
   const [nextQuestionIndex, setNextQuestionIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
+  useEffect(() => {
+    if (onAudioRef) {
+      onAudioRef(audioRef);
+    }
+  }, [onAudioRef]);
 
   const toggleVolumeSlider = () => setShowVolumeSlider(!showVolumeSlider);
 
@@ -48,36 +54,35 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
     if (!audio) return;
 
     const handlePlay = () => setIsPlaying(true);
-
     const handlePause = () => setIsPlaying(false);
 
-
     const handleTimeUpdate = () => {
-        const currentTime = audio.currentTime;
-        setCurrentTimeLocal(currentTime);
-        dispatch(setCurrentTime(currentTime));
-  
-        // Update maxWatchedTime only if the current time exceeds the previous maxWatchedTime
-        if (currentTime > maxWatchedTime) {
-          dispatch(setMaxWatchedTime(currentTime));
-        }
-    
-      // Assuming timedQuestions are sorted by timestamp
+      const currentTime = audio.currentTime;
+      setCurrentTimeLocal(currentTime);
+      dispatch(setCurrentTime(currentTime));
+
+      if (currentTime > maxWatchedTime) {
+        dispatch(setMaxWatchedTime(currentTime));
+      }
+
       if (nextQuestionIndex < sortedTimedQuestions.length) {
         const nextQuestion = sortedTimedQuestions[nextQuestionIndex];
         if (audio.currentTime >= parseFloat(nextQuestion.timestamp)) {
           audio.pause();
           setIsPlaying(false);
           onTimestampReached?.(nextQuestion.timestamp, nextQuestion.question);
-          setNextQuestionIndex(nextQuestionIndex + 1); // Prepare the index for the next question
+          setNextQuestionIndex(nextQuestionIndex + 1);
         }
       }
     };
-    
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
       dispatch(setDurationAction(audio.duration));
+    };
+
+    const handleCanPlay = () => {
+      onCanPlay?.();
     };
 
     audio.addEventListener('play', handlePlay);
@@ -85,6 +90,7 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', () => onEnded?.());
+    audio.addEventListener('canplay', handleCanPlay);
 
     return () => {
       audio.removeEventListener('play', handlePlay);
@@ -92,33 +98,17 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', () => onEnded?.());
+      audio.removeEventListener('canplay', handleCanPlay);
     };
-}, [dispatch, onEnded, sortedTimedQuestions, onTimestampReached, audioRef, maxWatchedTime]);
+  }, [dispatch, onEnded, sortedTimedQuestions, onTimestampReached, maxWatchedTime, onCanPlay]);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
-
-    setIsPlaying(false);
-    setCurrentTimeLocal(0);
-    setDuration(0);
-    dispatch(setCurrentTime(0));
-    dispatch(setMaxWatchedTime(0));
-    audio.src = songUrl; // Load new song
-
-    // Attempt autoplay for the new song
-    const autoplay = async () => {
-        try {
-          await audio.play();
-          setIsPlaying(true);
-        } catch (error) {
-          console.error("Autoplay error:", error);
-          // Handle or log error specifics
-        }
-      };
-      
-    autoplay();
-  }, [songUrl, dispatch, audioRef]);
+    if (audio) {
+      audio.src = songUrl;
+      audio.load();
+    }
+  }, [songUrl]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -158,7 +148,7 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
   return (
     <div className="music-player bg-black px-4 py-2 outline-black outline outline-4 rounded-xl">
       <div className="flex flex-col h-full">
-        <audio ref={audioRef} />
+        <audio ref={audioRef} style={{ display: 'none' }} />
         <div className="controls flex-grow flex justify-between items-center mb-2">
           <button onClick={seekBack}><FaBackward /></button>
           <button onClick={togglePlay}>{isPlaying ? <FaPause /> : <FaPlay />}</button>

@@ -28,6 +28,9 @@ export async function POST(request: Request) {
       .limit(1)
       .execute();
 
+    // Log the song record to the Node console
+    console.log("API Response:", songRecord);
+
     return new Response(JSON.stringify(songRecord), { status: 200 });
   } catch (error) {
     console.error("Error retrieving the oldest song from queue:", error);

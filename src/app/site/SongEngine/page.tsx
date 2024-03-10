@@ -78,6 +78,16 @@ const SongEngine: React.FC = () => {
   const currentTime = useSelector(selectCurrentTime);
   const lyricsContainerRef = useRef<HTMLDivElement | null>(null);
 
+  const loadSongRef = useRef<(url: string) => void | null>(null);
+
+  const handleCanPlay = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((error) => {
+        console.error('Autoplay error:', error);
+      });
+    }
+  }, []);
+
   useEffect(() => {
     async function fetchUserId() {
       const supabase = createClient();
@@ -170,7 +180,7 @@ const SongEngine: React.FC = () => {
   
         if (urlResponse.ok) {
           const urlData = await urlResponse.json();
-          const presignedUrl = urlData.find((url) => url.objectKey === songData.r2Id)?.url;
+          const presignedUrl = urlData.find((url: UrlData) => url.objectKey === songData.r2Id)?.url;
           console.log("Presigned URL:", presignedUrl);
   
           // Update the songData object with the presigned URL
@@ -181,34 +191,30 @@ const SongEngine: React.FC = () => {
           console.log("vocalsEnd from API:", songData.vocalsEnd);
   
           // Attempt to parse endOfSongQuestions if it's a string
-          let parsedEndOfSongQuestions = [];
+          let parsedEndOfSongQuestions: Question[] = [];
           try {
             if (typeof songData.endOfSongQuestions === 'string') {
               console.log("Parsing endOfSongQuestions from string");
-              parsedEndOfSongQuestions = JSON.parse(songData.endOfSongQuestions).map(question => ({ question }));
+              parsedEndOfSongQuestions = JSON.parse(songData.endOfSongQuestions).map((question: string) => ({ question }));
             } else {
               console.log("Using endOfSongQuestions as it is");
-              parsedEndOfSongQuestions = songData.endOfSongQuestions.map(question => ({ question }));
+              parsedEndOfSongQuestions = songData.endOfSongQuestions.map((question: string) => ({ question }));
             }
           } catch (error) {
             console.error('Error parsing endOfSongQuestions:', error);
           }
-  
-          // Update the React state with the new song details
-          setSelectedSong(songData);
-          setState((prevState) => ({
-            ...prevState,
-            timedQuestions: songData.timedQuestions || [],
-            endOfSongQuestions: parsedEndOfSongQuestions,
-            vocalsStart: songData.vocalsStart,
-            vocalsEnd: songData.vocalsEnd,
-          }));
+
+          // Update the songData object with parsed data
+          songData.timedQuestions = songData.timedQuestions || [];
+          songData.endOfSongQuestions = parsedEndOfSongQuestions;
+
+          return songData;
         } else {
           console.error("Failed to fetch presigned URL");
         }
       } else {
         console.log("No song data found");
-        setSelectedSong(null);
+        return null;
       }
     } catch (error) {
       console.error('Error fetching song details:', error);
@@ -218,9 +224,23 @@ const SongEngine: React.FC = () => {
     }
   }, [userId]);
   
-  
   useEffect(() => {
-    fetchSongDetails();
+    const fetchData = async () => {
+      const songData = await fetchSongDetails();
+      setSelectedSong(songData);
+
+      if (songData) {
+        setState((prevState) => ({
+          ...prevState,
+          timedQuestions: songData.timedQuestions || [],
+          endOfSongQuestions: songData.endOfSongQuestions || [],
+          vocalsStart: songData.vocalsStart,
+          vocalsEnd: songData.vocalsEnd,
+        }));
+      }
+    };
+
+    fetchData();
   }, [fetchSongDetails]);
 
   const handleTimestampReached = (timestamp: string, question: string) => {
@@ -256,7 +276,6 @@ const SongEngine: React.FC = () => {
     if (audio) audio.play();
   };
 
-  
   useEffect(() => {
     const checkTimestamps = () => {
       const timestamp = currentTime.toFixed(6);
@@ -299,7 +318,9 @@ const SongEngine: React.FC = () => {
       });
 
       // Dispatch points after successful removal
-      dispatch(addPoints({ userId, points: 100 }));
+      if (userId) {
+        dispatch(addPoints({ userId, points: 100 }));
+      }
 
       // Fetch next song details
       fetchSongDetails();
@@ -331,6 +352,37 @@ const SongEngine: React.FC = () => {
     handleLyricsScroll();
   }, [currentTime, selectedSong]);
 
+  useEffect(() => {
+    if (selectedSong && selectedSong.presignedUrl && loadSongRef.current) {
+      loadSongRef.current(selectedSong.presignedUrl);
+
+      const autoplay = async () => {
+        try {
+          await new Promise((resolve) => {
+            if (audioRef.current?.readyState === 4) {
+              resolve(true);
+            } else {
+              audioRef.current?.addEventListener('canplaythrough', resolve);
+            }
+          });
+          await audioRef.current?.play();
+        } catch (error) {
+          console.error('Autoplay error:', error);
+        }
+      };
+
+      autoplay();
+
+      return () => {
+        audioRef.current?.removeEventListener('canplaythrough', autoplay);
+      };
+    }
+  }, [selectedSong]);
+
+  const handleAudioRef = (ref: React.RefObject<HTMLAudioElement>) => {
+    audioRef.current = ref.current;
+  };
+
   return (
     <div className="flex flex-col py-4 h-full">
       <div className="flex-1 flex">
@@ -341,6 +393,7 @@ const SongEngine: React.FC = () => {
               <QuestionForm
                 question={state.currentQuestion.question}
                 onAnswerSubmit={handleAnswerSubmit}
+                isLastQuestion={false}
               />
             ) : (
               <div>{getTimeUntilNextQuestion()}</div>
@@ -352,16 +405,17 @@ const SongEngine: React.FC = () => {
               />
             )}
           </div>
-          {selectedSong && (
-            <div className=" mt-4">
+          {selectedSong && selectedSong.presignedUrl && (
+            <div className="mt-4">
               <FeedbackMusicPlayer
-                audioRef={audioRef}
                 key={selectedSong.id}
-                songUrl={selectedSong.presignedUrl || ''}
+                songUrl={selectedSong.presignedUrl}
                 timedQuestions={state.timedQuestions}
                 onTimestampReached={handleTimestampReached}
                 onEnded={() => setState((prevState) => ({ ...prevState, songEnded: true }))}
-                seekForwardDenial = {false}
+                seekForwardDenial={true}
+                onAudioRef={handleAudioRef}
+                onCanPlay={handleCanPlay}
               />
             </div>
           )}

@@ -1,53 +1,85 @@
-// app/page.tsx
+// Videos.tsx
 'use client';
-import { useState } from 'react';
-import ReactPlayer from 'react-player';
+import { useState, useRef } from 'react';
+import FeedbackMusicPlayer from '~/components/FeedbackMusicPlayer';
+import FeedbackVideoPlayer from '~/components/FeedbackVideoPlayer';
 
-export default function Home() {
-  const [videoId, setVideoId] = useState('');
+export default function Videos() {
+  const [r2Id, setR2Id] = useState('');
+  const [youtubeVideoId, setYoutubeVideoId] = useState('');
   const [videoSources, setVideoSources] = useState<{ [key: string]: string }>({});
-  const [selectedQuality, setSelectedQuality] = useState('');
+  const [songUrl, setSongUrl] = useState('');
+  const audioRef = useRef<HTMLAudioElement>(null);
 
-  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const res = await fetch(`/api/get-video-url?video_id=${videoId}`);
+  const handleR2Search = async () => {
+    if (r2Id) {
+      const res = await fetch('/api/getR2SongUrls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ objectKeys: [r2Id] }),
+      });
 
-    if (!res.ok) {
-      console.error('Failed to fetch video info');
-      return;
+      if (res.ok) {
+        const data = await res.json();
+        if (data.length > 0 && data[0].url) {
+          setSongUrl(data[0].url);
+          setVideoSources({});
+        } else {
+          console.error('Error retrieving R2 song URL');
+        }
+      } else {
+        console.error('Error calling getR2SongUrls API');
+      }
     }
+  };
 
-    const data = await res.json();
-    const video = data.videos;
-    setVideoSources(video);
-    setSelectedQuality(Object.keys(video)[0]);
+  const handleYoutubeSearch = async () => {
+    if (youtubeVideoId) {
+      const res = await fetch(`/api/get-video-url?video_id=${youtubeVideoId}`);
+
+      if (res.ok) {
+        const data = await res.json();
+        const video = data.videos;
+        setVideoSources(video);
+        setSongUrl('');
+      } else {
+        console.error('Failed to fetch video info');
+      }
+    }
   };
 
   return (
     <main>
-      <form onSubmit={handleSearch}>
+      <div>
         <input
           type="text"
-          placeholder="Enter video ID"
-          value={videoId}
-          onChange={(e) => setVideoId(e.target.value)}
+          placeholder="Enter R2 ID"
+          value={r2Id}
+          onChange={(e) => setR2Id(e.target.value)}
         />
-        <button type="submit">Search</button>
-      </form>
-      {selectedQuality && (
-        <>
-          <ReactPlayer url={videoSources[selectedQuality]} controls />
-          <select
-            value={selectedQuality}
-            onChange={(e) => setSelectedQuality(e.target.value)}
-          >
-            {Object.keys(videoSources).map((quality) => (
-              <option key={quality} value={quality}>
-                {quality}
-              </option>
-            ))}
-          </select>
-        </>
+        <button onClick={handleR2Search}>Search R2</button>
+      </div>
+      <div>
+        <input
+          type="text"
+          placeholder="Enter YouTube Video ID"
+          value={youtubeVideoId}
+          onChange={(e) => setYoutubeVideoId(e.target.value)}
+        />
+        <button onClick={handleYoutubeSearch}>Search YouTube</button>
+      </div>
+      {(songUrl || Object.keys(videoSources).length > 0) && (
+        <FeedbackMusicPlayer
+          videoSources={videoSources}
+          songUrl={songUrl}
+          onEnded={() => console.log('Video ended')}
+          onTimestampReached={(timestamp, question) => console.log(`Question at ${timestamp}: ${question}`)}
+          timedQuestions={[]} // Pass your timed questions array here
+          seekForwardDenial={false}
+          audioRef={audioRef}
+        />
       )}
     </main>
   );
