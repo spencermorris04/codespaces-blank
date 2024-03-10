@@ -1,8 +1,12 @@
 // Videos.tsx
-'use client';
-import { useState, useRef } from 'react';
+"use client";
+import React, { useState, useRef } from 'react';
 import FeedbackMusicPlayer from '~/components/FeedbackMusicPlayer';
-import FeedbackVideoPlayer from '~/components/FeedbackVideoPlayer';
+
+interface TimedQuestion {
+  timestamp: string;
+  question: string;
+}
 
 export default function Videos() {
   const [r2Id, setR2Id] = useState('');
@@ -51,8 +55,8 @@ export default function Videos() {
   };
 
   return (
-    <main>
-      <div>
+    <main className="videos-container">
+      <div className="search-box">
         <input
           type="text"
           placeholder="Enter R2 ID"
@@ -61,7 +65,7 @@ export default function Videos() {
         />
         <button onClick={handleR2Search}>Search R2</button>
       </div>
-      <div>
+      <div className="search-box">
         <input
           type="text"
           placeholder="Enter YouTube Video ID"
@@ -78,7 +82,6 @@ export default function Videos() {
           onTimestampReached={(timestamp, question) => console.log(`Question at ${timestamp}: ${question}`)}
           timedQuestions={[]} // Pass your timed questions array here
           seekForwardDenial={false}
-          audioRef={audioRef}
         />
       )}
     </main>

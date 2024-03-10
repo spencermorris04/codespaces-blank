@@ -25,8 +25,13 @@ export async function GET(request: Request) {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error fetching video info:', error);
-    return NextResponse.json({ error: 'Failed to fetch video info', details: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching video info:', error);
+      return NextResponse.json({ error: 'Failed to fetch video info', details: error.message }, { status: 500 });
+    } else {
+      console.error('Unknown error:', error);
+      return NextResponse.json({ error: 'Unknown error occurred' }, { status: 500 });
+    }
   }
 }

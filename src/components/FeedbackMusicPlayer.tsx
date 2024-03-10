@@ -12,6 +12,7 @@ interface TimedQuestion {
 }
 
 interface FeedbackMusicPlayerProps {
+  videoSources: { [key: string]: string };
   songUrl: string;
   onEnded?: () => void;
   onTimestampReached?: (timestamp: string, question: string) => void;
@@ -29,6 +30,7 @@ const FeedbackMusicPlayer: React.FC<FeedbackMusicPlayerProps> = ({
   timedQuestions,
   onAudioRef,
   onCanPlay,
+  videoSources,
 }) => {
   const dispatch = useDispatch();
   const maxWatchedTime = useSelector(selectMaxWatchedTime);
