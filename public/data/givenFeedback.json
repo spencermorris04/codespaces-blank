@@ -1,0 +1,82 @@
+[
+    {
+      "id": "1",
+      "title": "Screenplay 1",
+      "author": "User1",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Flow and Naturalness"
+    },
+    {
+      "id": "2",
+      "title": "Screenplay 2",
+      "author": "User2",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Beat Sheets"
+    },
+    {
+      "id": "3",
+      "title": "Screenplay 3",
+      "author": "User3",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Screen Direction"
+    },
+    {
+      "id": "4",
+      "title": "Screenplay 4",
+      "author": "User4",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Character Voice"
+    },
+    {
+      "id": "5",
+      "title": "Screenplay 5",
+      "author": "User5",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Plot Twists"
+    },
+    {
+      "id": "6",
+      "title": "Screenplay 6",
+      "author": "User6",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Dialogue Pacing"
+    },
+    {
+      "id": "7",
+      "title": "Screenplay 7",
+      "author": "User7",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Subtext"
+    },
+    {
+      "id": "8",
+      "title": "Screenplay 8",
+      "author": "User8",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Character Arcs"
+    },
+    {
+      "id": "9",
+      "title": "Screenplay 9",
+      "author": "User9",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Scene Transitions"
+    },
+    {
+      "id": "10",
+      "title": "Screenplay 10",
+      "author": "User10",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Conflict Resolution"
+    }
+]  

@@ -1,0 +1,5 @@
+[
+    { "key": "dialogue", "text": "Dialogue", "value": "dialogue" },
+    { "key": "story-structure", "text": "Story Structure", "value": "story-structure" },
+    { "key": "style-formatting", "text": "Style/Formatting", "value": "style-formatting" }
+]  

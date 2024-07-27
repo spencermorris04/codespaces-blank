@@ -1,0 +1,82 @@
+[
+    {
+      "id": "11",
+      "title": "My Screenplay 1",
+      "author": "User11",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Screen Direction"
+    },
+    {
+      "id": "12",
+      "title": "My Screenplay 2",
+      "author": "User12",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Character Voice"
+    },
+    {
+      "id": "13",
+      "title": "My Screenplay 3",
+      "author": "User13",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Plot Twists"
+    },
+    {
+      "id": "14",
+      "title": "My Screenplay 4",
+      "author": "User14",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Dialogue Pacing"
+    },
+    {
+      "id": "15",
+      "title": "My Screenplay 5",
+      "author": "User15",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Subtext"
+    },
+    {
+      "id": "16",
+      "title": "My Screenplay 6",
+      "author": "User16",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Character Arcs"
+    },
+    {
+      "id": "17",
+      "title": "My Screenplay 7",
+      "author": "User17",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Scene Transitions"
+    },
+    {
+      "id": "18",
+      "title": "My Screenplay 8",
+      "author": "User18",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Dialogue",
+      "subgroup": "Conflict Resolution"
+    },
+    {
+      "id": "19",
+      "title": "My Screenplay 9",
+      "author": "User19",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Story Structure",
+      "subgroup": "Beat Sheets"
+    },
+    {
+      "id": "20",
+      "title": "My Screenplay 10",
+      "author": "User20",
+      "authorImage": "https://via.placeholder.com/50",
+      "group": "Style/Formatting",
+      "subgroup": "Formatting Consistency"
+    }
+]  

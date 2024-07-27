@@ -1,0 +1,259 @@
+{
+    "dialogue": [
+      {
+        "group": "dialogue",
+        "subgroups": [
+          {
+            "name": "flow-and-naturalness",
+            "questions": [
+              { "type": "text", "text": "Does the dialogue flow naturally and sound realistic?" },
+              { "type": "text", "text": "Are there any awkward or forced lines of dialogue?" },
+              { "type": "text", "text": "How well does the dialogue match the characters' personalities and backgrounds?" }
+            ]
+          },
+          {
+            "name": "relevance-to-plot",
+            "questions": [
+              { "type": "text", "text": "Does the dialogue advance the plot effectively?" },
+              { "type": "text", "text": "Are there any conversations that feel unnecessary or irrelevant?" },
+              { "type": "text", "text": "How well does the dialogue provide exposition without being too obvious?" }
+            ]
+          },
+          {
+            "name": "character-specific-dialogue",
+            "questions": [
+              { "type": "text", "text": "Is the dialogue consistent with each character’s established traits and motivations?" },
+              { "type": "text", "text": "How well does the dialogue reflect the character’s emotional state?" },
+              { "type": "text", "text": "Does each character have a unique voice?" }
+            ]
+          },
+          {
+            "name": "development",
+            "questions": [
+              { "type": "text", "text": "Does the dialogue contribute to the character’s development?" },
+              { "type": "text", "text": "Are there key moments in the dialogue that show character growth or change?" },
+              { "type": "text", "text": "How well does the dialogue reveal character relationships?" }
+            ]
+          },
+          {
+            "name": "comedy-jokes",
+            "questions": [
+              { "type": "text", "text": "Is the timing of the jokes effective?" },
+              { "type": "text", "text": "Do the jokes land well within the context of the scene?" },
+              { "type": "text", "text": "Are there any jokes that feel out of place or poorly timed?" }
+            ]
+          },
+          {
+            "name": "relevance",
+            "questions": [
+              { "type": "text", "text": "Do the jokes contribute to the overall tone of the screenplay?" },
+              { "type": "text", "text": "Are the jokes relevant to the characters and plot?" },
+              { "type": "text", "text": "How well do the jokes fit with the story’s setting and context?" }
+            ]
+          },
+          {
+            "name": "humor-effectiveness",
+            "questions": [
+              { "type": "text", "text": "Are the jokes genuinely funny?" },
+              { "type": "text", "text": "Is there a good balance between humor and the story’s more serious elements?" },
+              { "type": "text", "text": "Do the jokes enhance the characters’ personalities?" }
+            ]
+          },
+          {
+            "name": "monologues",
+            "questions": [
+              { "type": "text", "text": "Does the monologue evoke the intended emotions?" },
+              { "type": "text", "text": "Is the monologue’s emotional arc clear and compelling?" },
+              { "type": "text", "text": "How well does the monologue connect with the audience?" }
+            ]
+          },
+          {
+            "name": "relevance",
+            "questions": [
+              { "type": "text", "text": "Does the monologue serve a clear purpose in the story?" },
+              { "type": "text", "text": "Is the monologue’s placement within the screenplay effective?" },
+              { "type": "text", "text": "How well does the monologue reflect the character’s journey?" }
+            ]
+          },
+          {
+            "name": "length",
+            "questions": [
+              { "type": "text", "text": "Is the monologue an appropriate length for the scene?" },
+              { "type": "text", "text": "Are there any parts of the monologue that feel too long or redundant?" },
+              { "type": "text", "text": "Does the monologue maintain the audience’s interest throughout?" }
+            ]
+          }
+        ]
+      }
+    ],
+    "story-structure": [
+      {
+        "group": "story-structure",
+        "subgroups": [
+          {
+            "name": "beat-sheets",
+            "questions": [
+              { "type": "text", "text": "Are the key beats of the story clearly defined?" },
+              { "type": "text", "text": "How effectively do the beats advance the plot?" },
+              { "type": "text", "text": "Is there a good balance between action and character development in the beats?" }
+            ]
+          },
+          {
+            "name": "pacing",
+            "questions": [
+              { "type": "text", "text": "Does the pacing of the beats feel appropriate for the story?" },
+              { "type": "text", "text": "Are there any sections that feel too slow or rushed?" },
+              { "type": "text", "text": "How well does the pacing build tension and maintain interest?" }
+            ]
+          },
+          {
+            "name": "hero-journey",
+            "questions": [
+              { "type": "text", "text": "Are all stages of the Hero's Journey present and clear?" },
+              { "type": "text", "text": "How effectively does each stage contribute to the protagonist's development?" },
+              { "type": "text", "text": "Is there a natural progression between the stages?" },
+              { "type": "text", "text": "Does the Hero's Journey evoke the intended emotions?" },
+              { "type": "text", "text": "How well does the protagonist's journey resonate with the audience?" },
+              { "type": "text", "text": "Are there key emotional moments that feel particularly impactful?" }
+            ]
+          },
+          {
+            "name": "save-the-cat",
+            "questions": [
+              { "type": "text", "text": "Does the opening image grab your attention immediately?" },
+              { "type": "text", "text": "How effectively does the opening image set the tone and mood of the story?" },
+              { "type": "text", "text": "Does the opening image hint at the story’s theme or main conflict?" },
+              { "type": "text", "text": "Is the theme of the story clearly stated early on?" },
+              { "type": "text", "text": "How well does the theme statement foreshadow the protagonist’s journey?" },
+              { "type": "text", "text": "Is the theme statement delivered naturally within the dialogue or action?" },
+              { "type": "text", "text": "Are the protagonist and their “old world” established clearly?" },
+              { "type": "text", "text": "Are the key characters introduced in an engaging manner?" },
+              { "type": "text", "text": "Does the setup create interest in the protagonist’s upcoming journey?" },
+              { "type": "text", "text": "Is the catalyst event clear and impactful?" },
+              { "type": "text", "text": "How effectively does the catalyst disrupt the protagonist’s status quo?" },
+              { "type": "text", "text": "Does the catalyst hook you into wanting to know what happens next?" },
+              { "type": "text", "text": "Does the protagonist’s internal conflict feel believable?" },
+              { "type": "text", "text": "How well is the protagonist’s doubt and decision-making portrayed?" },
+              { "type": "text", "text": "Does the debate section build tension and anticipation?" },
+              { "type": "text", "text": "Is the protagonist’s decision to embark on their journey clearly defined?" },
+              { "type": "text", "text": "How significant and impactful is this decision on the plot?" },
+              { "type": "text", "text": "Does this moment effectively transition the story into Act 2?" },
+              { "type": "text", "text": "Is the B story (secondary subplot) introduced effectively?" },
+              { "type": "text", "text": "How well does the B story enhance the main plot and theme?" },
+              { "type": "text", "text": "Does the B story provide a meaningful counterpoint to the A story?" },
+              { "type": "text", "text": "Are the protagonist’s new experiences engaging and entertaining?" },
+              { "type": "text", "text": "How well do these scenes explore the protagonist’s new world or abilities?" },
+              { "type": "text", "text": "Do these scenes reinforce the story’s rules and the protagonist’s growth?" },
+              { "type": "text", "text": "Is the midpoint a clear turning point in the story?" },
+              { "type": "text", "text": "Does the protagonist achieve or fail at something significant?" },
+              { "type": "text", "text": "How effectively does the midpoint raise the stakes or change the story’s direction?" },
+              { "type": "text", "text": "Are the obstacles and antagonistic forces clearly defined and impactful?" },
+              { "type": "text", "text": "How well does this section build tension and challenge the protagonist?" },
+              { "type": "text", "text": "Do the protagonist’s struggles feel increasingly dire and urgent?" },
+              { "type": "text", "text": "Does the “all is lost” moment feel like a significant low point for the protagonist?" },
+              { "type": "text", "text": "Is the loss or setback emotionally impactful and believable?" },
+              { "type": "text", "text": "How well does this moment set up the protagonist’s final challenge?" },
+              { "type": "text", "text": "Does the protagonist’s reflection and despair feel deep and genuine?" },
+              { "type": "text", "text": "How effectively does this section portray the protagonist’s darkest moment?" },
+              { "type": "text", "text": "Does this moment provide insight into the protagonist’s inner struggles and resolve?" },
+              { "type": "text", "text": "Is the protagonist’s final decision or revelation clearly defined and impactful?" },
+              { "type": "text", "text": "How well does this moment transition the story into the final act?" },
+              { "type": "text", "text": "Does this decision feel like a natural and necessary progression of the story?" },
+              { "type": "text", "text": "Is the climax of the story engaging and satisfying?" },
+              { "type": "text", "text": "How effectively does the protagonist use their newfound skills or knowledge?" },
+              { "type": "text", "text": "Does the resolution tie up the main plot and subplots satisfactorily?" },
+              { "type": "text", "text": "Does the final image effectively encapsulate the story’s theme and journey?" },
+              { "type": "text", "text": "How impactful and memorable is the final image?" },
+              { "type": "text", "text": "Does the final image provide a satisfying conclusion to the story?" }
+            ]
+          },
+          {
+            "name": "three-act-structure",
+            "questions": [
+              { "type": "text", "text": "Does Act 1 establish the characters and setting effectively?" },
+              { "type": "text", "text": "How well does Act 1 introduce the main conflict?" },
+              { "type": "text", "text": "Does Act 1 set up the protagonist’s journey clearly?" },
+              { "type": "text", "text": "Is Act 2 engaging and filled with rising action?" },
+              { "type": "text", "text": "How well does Act 2 develop the protagonist’s journey and challenges?" },
+              { "type": "text", "text": "Does Act 2 build towards a significant midpoint?" },
+              { "type": "text", "text": "Is Act 3 climactic and satisfying?" },
+              { "type": "text", "text": "How effectively does Act 3 resolve the main conflict?" },
+              { "type": "text", "text": "Does Act 3 provide a clear and impactful resolution?" }
+            ]
+          }
+        ]
+      }
+    ],
+    "style-formatting": [
+      {
+        "group": "style-formatting",
+        "subgroups": [
+          {
+            "name": "screen-direction",
+            "questions": [
+              { "type": "text", "text": "Is the screen direction clear and easy to understand?" },
+              { "type": "text", "text": "Are there any ambiguous or confusing descriptions?" },
+              { "type": "text", "text": "How well does the screen direction convey the intended action?" }
+            ]
+          },
+          {
+            "name": "brevity",
+            "questions": [
+              { "type": "text", "text": "Is the screen direction concise and to the point?" },
+              { "type": "text", "text": "Are there any sections that feel overly verbose or detailed?" },
+              { "type": "text", "text": "Does the brevity of the screen direction maintain the story’s pace?" }
+            ]
+          },
+          {
+            "name": "effectiveness",
+            "questions": [
+              { "type": "text", "text": "Does the screen direction effectively convey the visual elements of the scene?" },
+              { "type": "text", "text": "How well does the screen direction support the story’s tone and mood?" },
+              { "type": "text", "text": "Are there any sections where the screen direction could be improved?" }
+            ]
+          },
+          {
+            "name": "camera-transitions",
+            "questions": [
+              { "type": "text", "text": "Are camera transitions used appropriately and effectively?" },
+              { "type": "text", "text": "Do the transitions enhance the visual storytelling?" },
+              { "type": "text", "text": "Are there any transitions that feel unnecessary or out of place?" }
+            ]
+          },
+          {
+            "name": "clarity",
+            "questions": [
+              { "type": "text", "text": "Are the camera transitions clearly indicated and easy to follow?" },
+              { "type": "text", "text": "How well do the transitions convey the intended visual effect?" },
+              { "type": "text", "text": "Are there any transitions that could be clarified or improved?" }
+            ]
+          },
+          {
+            "name": "scene-headings",
+            "questions": [
+              { "type": "text", "text": "Are the scene headings correctly formatted according to industry standards?" },
+              { "type": "text", "text": "Are there any formatting errors or inconsistencies?" },
+              { "type": "text", "text": "How well do the scene headings help orient the reader?" }
+            ]
+          },
+          {
+            "name": "length-and-ratio",
+            "questions": [
+              { "type": "text", "text": "Is there a good balance between dialogue and screen direction?" },
+              { "type": "text", "text": "Are there any sections that feel overly dialogue-heavy or action-heavy?" },
+              { "type": "text", "text": "How well does the balance support the pacing and tone of the screenplay?" }
+            ]
+          },
+          {
+            "name": "length",
+            "questions": [
+              { "type": "text", "text": "Are the scenes an appropriate length for the story’s pacing?" },
+              { "type": "text", "text": "Are there any scenes that feel too long or too short?" },
+              { "type": "text", "text": "Does the length of the scenes maintain the audience’s interest?" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+  

@@ -1,0 +1,30 @@
+{
+    "dialogue": [
+      { "key": "flow-and-naturalness", "text": "Flow and Naturalness", "value": "flow-and-naturalness" },
+      { "key": "relevance-to-plot", "text": "Relevance to Plot", "value": "relevance-to-plot" },
+      { "key": "character-specific-dialogue", "text": "Character-Specific Dialogue", "value": "character-specific-dialogue" },
+      { "key": "development", "text": "Development", "value": "development" },
+      { "key": "comedy-jokes", "text": "Comedy/Jokes", "value": "comedy-jokes" },
+      { "key": "relevance", "text": "Relevance", "value": "relevance" },
+      { "key": "humor-effectiveness", "text": "Humor Effectiveness", "value": "humor-effectiveness" },
+      { "key": "monologues", "text": "Monologues", "value": "monologues" },
+      { "key": "length", "text": "Length", "value": "length" }
+    ],
+    "story-structure": [
+      { "key": "beat-sheets", "text": "Beat Sheets", "value": "beat-sheets" },
+      { "key": "pacing", "text": "Pacing", "value": "pacing" },
+      { "key": "hero-journey", "text": "Hero's Journey", "value": "hero-journey" },
+      { "key": "save-the-cat", "text": "Save the Cat", "value": "save-the-cat" },
+      { "key": "three-act-structure", "text": "Three-Act Structure", "value": "three-act-structure" }
+    ],
+    "style-formatting": [
+      { "key": "screen-direction", "text": "Screen Direction", "value": "screen-direction" },
+      { "key": "brevity", "text": "Brevity", "value": "brevity" },
+      { "key": "effectiveness", "text": "Effectiveness", "value": "effectiveness" },
+      { "key": "camera-transitions", "text": "Camera Transitions", "value": "camera-transitions" },
+      { "key": "clarity", "text": "Clarity", "value": "clarity" },
+      { "key": "scene-headings", "text": "Scene Headings", "value": "scene-headings" },
+      { "key": "length-and-ratio", "text": "Length and Ratio", "value": "length-and-ratio" },
+      { "key": "length", "text": "Length", "value": "length" }
+    ]
+}
