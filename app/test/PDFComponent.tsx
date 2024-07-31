@@ -51,6 +51,7 @@ const PDFComponent: React.FC = () => {
         screen_directions: screenDirections
       });
       setParsedScreenplay(processedScreenplay);
+      console.log("Parsed Screenplay JSON:", JSON.stringify(processedScreenplay, null, 2));
     } catch (error) {
       console.error('Error processing PDF:', error);
       setExtractedText('Error processing PDF');
