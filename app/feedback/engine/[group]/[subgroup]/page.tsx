@@ -1,47 +1,84 @@
-// app/feedback/engine/[group]/[subgroup]/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, MouseEvent, ChangeEvent } from 'react';
 import { useParams } from 'next/navigation';
 import { Button, Form, Segment, TextArea, Input, Icon } from 'semantic-ui-react';
+
+interface Question {
+  text: string;
+  type: string;
+  annotations?: Annotation[];
+  contentHtml?: string;
+  answer?: string;
+}
+
+interface Annotation {
+  text: string;
+  comment: string;
+  color: string;
+  id: number;
+}
+
+interface GroupData {
+  group: string;
+  subgroups?: Subgroup[];
+}
+
+interface Subgroup {
+  name: string;
+  questions: Question[];
+}
 
 const colors = [
   '#FFD700', '#FF6347', '#ADFF2F', '#00BFFF', '#BA55D3', '#FF69B4', '#CD5C5C', '#FFA500', '#87CEEB', '#32CD32'
 ];
 
-const findSubgroup = (groupData: any, subgroupName: string): any => {
-  if (!groupData.subgroups) return null;
-  for (const subgroup of groupData.subgroups) {
-    if (subgroup.name === subgroupName) {
-      return subgroup;
+const findSubgroup = (groupData: GroupData | Subgroup, subgroupName: string): Subgroup | null => {
+  if (isGroupData(groupData)) {
+    if (!groupData.subgroups) return null;
+    
+    for (const subgroup of groupData.subgroups) {
+      if (subgroup.name === subgroupName) {
+        return subgroup;
+      }
+      const foundSubgroup = findSubgroup(subgroup, subgroupName);
+      if (foundSubgroup) {
+        return foundSubgroup;
+      }
     }
-    const foundSubgroup = findSubgroup(subgroup, subgroupName);
-    if (foundSubgroup) {
-      return foundSubgroup;
+  } else {
+    // This is a Subgroup
+    if (groupData.name === subgroupName) {
+      return groupData;
     }
   }
   return null;
 };
 
+function isGroupData(data: GroupData | Subgroup): data is GroupData {
+  return (data as GroupData).group !== undefined;
+}
+
+
 export default function FeedbackEngine() {
   const params = useParams();
   const { group, subgroup } = params as { group: string; subgroup: string };
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<any>({});
-  const [questions, setQuestions] = useState<any>(null);
+  const [answers, setAnswers] = useState<Record<string, Partial<Question>>>({});
+  const [questions, setQuestions] = useState<Record<string, GroupData[]> | null>(null);
   const [selectedAnnotationIndex, setSelectedAnnotationIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchQuestions = async () => {
       const response = await fetch('/data/questions.json');
-      const data = await response.json();
+      const data: Record<string, GroupData[]> = await response.json();
       setQuestions(data);
     };
 
     fetchQuestions();
   }, []);
 
-  const currentGroup = questions?.[group]?.find((g: any) => g.group === group);
+  const currentGroup = questions?.[group]?.find((g: GroupData) => g.group === group);
   const currentSubgroup = currentGroup ? findSubgroup(currentGroup, subgroup) : null;
   const currentQuestion = currentSubgroup?.questions[currentQuestionIndex];
 
@@ -49,10 +86,10 @@ export default function FeedbackEngine() {
     return <div className="flex items-center justify-center h-screen text-xl text-red-500">Invalid group or subgroup</div>;
   }
 
-  const handleAnswerChange = (e: any) => {
+  const handleAnswerChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newAnswers = { ...answers };
-    newAnswers[currentQuestion.text] = {
-      ...newAnswers[currentQuestion.text],
+    newAnswers[currentQuestion!.text] = {
+      ...newAnswers[currentQuestion!.text],
       answer: e.target.value,
     };
     setAnswers(newAnswers);
@@ -63,11 +100,11 @@ export default function FeedbackEngine() {
     const selectedText = selection?.toString() || '';
     if (selectedText) {
       const newAnswers = { ...answers };
-      const currentAnnotations = newAnswers[currentQuestion.text]?.annotations || [];
+      const currentAnnotations = newAnswers[currentQuestion!.text]?.annotations || [];
       if (currentAnnotations.length < 10) {
         const color = colors[currentAnnotations.length % colors.length];
         const newAnnotation = { text: selectedText, comment: '', color, id: Date.now() };
-        const range = selection.getRangeAt(0);
+        const range = selection!.getRangeAt(0);
         const mark = document.createElement('mark');
         mark.style.backgroundColor = color;
         mark.appendChild(range.extractContents());
@@ -76,8 +113,8 @@ export default function FeedbackEngine() {
         // Store the updated HTML content
         const contentHtml = document.getElementById('contentEditable')?.innerHTML || '';
 
-        newAnswers[currentQuestion.text] = {
-          ...newAnswers[currentQuestion.text],
+        newAnswers[currentQuestion!.text] = {
+          ...newAnswers[currentQuestion!.text],
           annotations: [...currentAnnotations, newAnnotation],
           contentHtml: contentHtml,
         };
@@ -90,12 +127,12 @@ export default function FeedbackEngine() {
   };
 
   const handleAnnotationChange = (index: number, comment: string) => {
-    const currentAnnotations = answers[currentQuestion.text]?.annotations;
+    const currentAnnotations = answers[currentQuestion!.text]?.annotations;
     if (currentAnnotations) {
       currentAnnotations[index].comment = comment;
       const newAnswers = { ...answers };
-      newAnswers[currentQuestion.text] = {
-        ...newAnswers[currentQuestion.text],
+      newAnswers[currentQuestion!.text] = {
+        ...newAnswers[currentQuestion!.text],
         annotations: [...currentAnnotations],
       };
       setAnswers(newAnswers);
@@ -107,13 +144,13 @@ export default function FeedbackEngine() {
   };
 
   const handleDeleteAnnotation = (index: number) => {
-    const currentAnnotations = answers[currentQuestion.text]?.annotations;
+    const currentAnnotations = answers[currentQuestion!.text]?.annotations;
     if (currentAnnotations) {
       const color = currentAnnotations[index].color;
       const updatedAnnotations = currentAnnotations.filter((_, i) => i !== index);
       const newAnswers = { ...answers };
-      newAnswers[currentQuestion.text] = {
-        ...newAnswers[currentQuestion.text],
+      newAnswers[currentQuestion!.text] = {
+        ...newAnswers[currentQuestion!.text],
         annotations: updatedAnnotations,
       };
       setAnswers(newAnswers);
@@ -126,7 +163,7 @@ export default function FeedbackEngine() {
           new RegExp(`<mark style="background-color: ${color};">([^<]*)<\/mark>`, 'g'),
           '$1'
         );
-        newAnswers[currentQuestion.text].contentHtml = contentElement.innerHTML;
+        newAnswers[currentQuestion!.text].contentHtml = contentElement.innerHTML;
         setAnswers(newAnswers);
       }
     }
@@ -138,7 +175,7 @@ export default function FeedbackEngine() {
       setSelectedAnnotationIndex(null);
     } else {
       // Ensure all questions have answers, even if blank
-      currentSubgroup.questions.forEach((question: any) => {
+      currentSubgroup.questions.forEach((question: Question) => {
         if (!answers[question.text]) {
           answers[question.text] = { answer: '', annotations: [], contentHtml: '' };
         }
@@ -169,7 +206,7 @@ export default function FeedbackEngine() {
             contentEditable
             suppressContentEditableWarning
             onMouseUp={handleTextSelection}
-            dangerouslySetInnerHTML={{ __html: answers[currentQuestion.text]?.contentHtml || '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>' }} // This should be the screenplay content
+            dangerouslySetInnerHTML={{ __html: answers[currentQuestion!.text]?.contentHtml || '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>' }} // This should be the screenplay content
           />
         </Segment>
       </div>
@@ -188,7 +225,7 @@ export default function FeedbackEngine() {
                   />
                   <Segment className="mt-2">
                     <p className="font-semibold">Annotations:</p>
-                    {answers[currentQuestion.text]?.annotations?.map((annotation: any, index: number) => (
+                    {answers[currentQuestion.text]?.annotations?.map((annotation, index) => (
                       <div
                         key={annotation.id}
                         className={`bg-yellow-200 p-2 rounded-lg mb-2 ${selectedAnnotationIndex === index ? 'border border-blue-500' : ''}`}
@@ -200,7 +237,7 @@ export default function FeedbackEngine() {
                             icon
                             size="mini"
                             color="red"
-                            onClick={(e) => {
+                            onClick={(e: MouseEvent) => {
                               e.stopPropagation();
                               handleDeleteAnnotation(index);
                             }}
@@ -211,7 +248,7 @@ export default function FeedbackEngine() {
                         <p style={{ backgroundColor: annotation.color }}>{annotation.text}</p>
                         <Input
                           value={annotation.comment}
-                          onChange={(e) => handleAnnotationChange(index, e.target.value)}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleAnnotationChange(index, e.target.value)}
                           placeholder="Add your comment here..."
                         />
                       </div>
